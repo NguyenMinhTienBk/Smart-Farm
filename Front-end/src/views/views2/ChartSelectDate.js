@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Button } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import { MaterialIcons } from '@expo/vector-icons';
 const DateScreen = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -11,14 +11,31 @@ const DateScreen = () => {
     setShowDatePicker(false);
     setDate(currentDate);
   };
+  const handleDateBackward = () => {
+    const newDate = new Date(date.getTime() - 86400000);
+    setDate(newDate);
+  };
 
+  const handleDateForward = () => {
+    const newDate = new Date(date.getTime() + 86400000);
+    setDate(newDate);
+  };
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.dateInput}
-        value={date.toDateString()}
-        editable={false}
-      />
+      <View style={styles.dateInputContainer}>
+        <TouchableOpacity onPress={handleDateBackward}>
+          <MaterialIcons name="arrow-left" size={55} color="white" />
+        </TouchableOpacity>
+        <TextInput
+          style={styles.dateInput}
+          value={date.toLocaleDateString('vi-VN')}
+          editable={false}
+        />
+        <TouchableOpacity onPress={handleDateForward}>
+          <MaterialIcons name="arrow-right" size={55} color="white" />
+        </TouchableOpacity>
+      </View>
+
       <Button
         title="Chọn ngày"
         onPress={() => setShowDatePicker(true)}
@@ -38,22 +55,27 @@ const DateScreen = () => {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    marginTop: 20,
+    marginTop: 30,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dateInputContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   dateInput: {
     height: 60,
-    width: 200,
-    fontSize:23,
+    width: 220,
+    fontSize: 23,
     borderWidth: 1,
     borderRadius: 16,
     backgroundColor: 'rgba(77, 128, 209, 1)',
-    color:'white', 
+    color: 'white',
     borderColor: 'black',
     padding: 10,
     marginBottom: 10,
-    marginRight: 10,
+    // marginRight: 10,
+    textAlign: 'center',
   },
 });
 
