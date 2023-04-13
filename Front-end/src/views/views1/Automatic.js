@@ -2,24 +2,40 @@ import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastAndroid } from "react-native";
+import client from "../../api/client";
 
 export default function Automatic() {
   const [selectedPlant, setSelectedPlant] = useState("");
   const [selectedSystem, setSelectedSystem] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
-    retrieveData();
+    retrieveEmail();
+    getDataFromBackend();
   }, []);
 
-  const retrieveData = async () => {
+  const getDataFromBackend = async () => {
     try {
-      const value1 = await AsyncStorage.getItem("selectedPlant");
-      const value2 = await AsyncStorage.getItem("selectedSystem");
-      if (value1 !== null) {
-        setSelectedPlant(value1);
+      const email = await AsyncStorage.getItem("email");
+      const response = await client.get(`/get-tree-system/${email}`);
+      // Kiểm tra xem email từ AsyncStorage có trùng với email từ backend hay không
+      if (email === response.data.email) {
+        setSelectedPlant(response.data.selectedPlant);
+        setSelectedSystem(response.data.selectedSystem);
+      } else {
+        setSelectedPlant(null); // Nếu không trùng thì set selectedPlant là null
+        setSelectedSystem(null); // Nếu không trùng thì set selectedSystem là null
       }
-      if (value2 !== null) {
-        setSelectedSystem(value2);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const retrieveEmail = async () => {
+    try {
+      const value = await AsyncStorage.getItem("email"); // Thay "email" bằng khóa lưu trữ dữ liệu email của bạn
+      if (value !== null) {
+        setEmail(value);
       }
     } catch (error) {
       console.log(error);
@@ -36,11 +52,37 @@ export default function Automatic() {
 
   const handleSave = async () => {
     try {
-      await AsyncStorage.setItem("selectedPlant", selectedPlant);
-      await AsyncStorage.setItem("selectedSystem", selectedSystem);
-      ToastAndroid.show("Lưu thay đổi thành công !", ToastAndroid.SHORT);
+      // Kiểm tra dữ liệu có tồn tại trong MongoDB hay không
+      const response = await client.get(`/get-tree-system/${email}`);
+      const tree = response.data;
+      if (tree) {
+        // Nếu đã tồn tại dữ liệu, thực hiện gọi API update
+        await client.put(`/update-tree-system/${email}`, {
+          selectedPlant: selectedPlant,
+          selectedSystem: selectedSystem,
+        });
+        ToastAndroid.show("Cập nhật thành công!", ToastAndroid.SHORT);
+      } else {
+        // Nếu chưa tồn tại dữ liệu, thực hiện gọi API create
+        await client.post("/create-tree-system", {
+          selectedPlant: selectedPlant,
+          selectedSystem: selectedSystem,
+          email: email,
+        });
+        ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
+      }
     } catch (error) {
-      console.log(error);
+      if (error.response && error.response.status === 404) {
+        // Nếu nhận được lỗi 404, thực hiện gọi API create
+        await client.post("/create-tree-system", {
+          selectedPlant: selectedPlant,
+          selectedSystem: selectedSystem,
+          email: email,
+        });
+        ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
+      } else {
+        console.log(error);
+      }
     }
   };
 
@@ -51,9 +93,9 @@ export default function Automatic() {
         <View style={styles.radioItem}>
           <TouchableOpacity
             style={
-              selectedPlant === "Cabbage" ? styles.radioSelected : styles.radio
+              selectedPlant === "Cải bắp" ? styles.radioSelected : styles.radio
             }
-            onPress={() => handlePlantSelection("Cabbage")}
+            onPress={() => handlePlantSelection("Cải bắp")}
           >
             <Text style={styles.radioText}>Cải bắp</Text>
           </TouchableOpacity>
@@ -61,11 +103,9 @@ export default function Automatic() {
         <View style={styles.radioItem}>
           <TouchableOpacity
             style={
-              selectedPlant === "Mango tree"
-                ? styles.radioSelected
-                : styles.radio
+              selectedPlant === "Cây xoài" ? styles.radioSelected : styles.radio
             }
-            onPress={() => handlePlantSelection("Mango tree")}
+            onPress={() => handlePlantSelection("Cây xoài")}
           >
             <Text style={styles.radioText}>Cây xoài</Text>
           </TouchableOpacity>
@@ -73,11 +113,9 @@ export default function Automatic() {
         <View style={styles.radioItem}>
           <TouchableOpacity
             style={
-              selectedPlant === "Apple tree"
-                ? styles.radioSelected
-                : styles.radio
+              selectedPlant === "Cây táo" ? styles.radioSelected : styles.radio
             }
-            onPress={() => handlePlantSelection("Apple tree")}
+            onPress={() => handlePlantSelection("Cây táo")}
           >
             <Text style={styles.radioText}>Cây táo</Text>
           </TouchableOpacity>
@@ -88,11 +126,11 @@ export default function Automatic() {
         <View style={styles.radioItem2}>
           <TouchableOpacity
             style={
-              selectedSystem === "Drip irrigation system"
+              selectedSystem === "Hệ thống tưới nhỏ giọt"
                 ? styles.radioSelected
                 : styles.radio
             }
-            onPress={() => handleSystemSelection("Drip irrigation system")}
+            onPress={() => handleSystemSelection("Hệ thống tưới nhỏ giọt")}
           >
             <Text style={styles.radioText}>Hệ thống tưới nhỏ giọt</Text>
           </TouchableOpacity>
@@ -100,11 +138,11 @@ export default function Automatic() {
         <View style={styles.radioItem2}>
           <TouchableOpacity
             style={
-              selectedSystem === "Sprinkler irrigation system"
+              selectedSystem === "Hệ thống tưới phun sương"
                 ? styles.radioSelected
                 : styles.radio
             }
-            onPress={() => handleSystemSelection("Sprinkler irrigation system")}
+            onPress={() => handleSystemSelection("Hệ thống tưới phun sương")}
           >
             <Text style={styles.radioText}>Hệ thống tưới phun sương</Text>
           </TouchableOpacity>
@@ -112,11 +150,11 @@ export default function Automatic() {
         <View style={styles.radioItem2}>
           <TouchableOpacity
             style={
-              selectedSystem === "Lawn irrigation system"
+              selectedSystem === "Hệ thống tưới cỏ"
                 ? styles.radioSelected
                 : styles.radio
             }
-            onPress={() => handleSystemSelection("Lawn irrigation system")}
+            onPress={() => handleSystemSelection("Hệ thống tưới cỏ")}
           >
             <Text style={styles.radioText}>Hệ thống tưới cỏ</Text>
           </TouchableOpacity>
