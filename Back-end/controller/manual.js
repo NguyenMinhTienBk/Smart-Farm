@@ -39,6 +39,7 @@ const getValueManualByEmail = async (req, res) => {
     // Extract desired fields from valueManuals and create a new array of objects
     const result = valueManuals.map((valueManual) => {
       return {
+        id: valueManual.id,
         waterAmount: valueManual.waterAmount,
         selectedDate: valueManual.selectedDate,
         selectedHour: valueManual.selectedHour,
@@ -56,4 +57,21 @@ const getValueManualByEmail = async (req, res) => {
   }
 };
 
-module.exports = { createValueManual, getValueManualByEmail };
+const deleteTask = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Query MongoDB to find and delete manual value by id
+    await ValueManual.findByIdAndDelete(id);
+
+    res.json({ success: true, message: "Value manual deleted successfully" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete value manual",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { createValueManual, getValueManualByEmail, deleteTask };

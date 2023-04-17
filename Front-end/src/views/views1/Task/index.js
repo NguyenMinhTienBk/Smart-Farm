@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
 import React from "react";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 export default function Task(props) {
   return (
@@ -14,6 +15,11 @@ export default function Task(props) {
       </View>
       <View style={styles.contain}>
         <Text style={styles.LastNumberText}>{props.waterAmount}</Text>
+      </View>
+      <View>
+        <TouchableOpacity onPress={() => props.handleDeleteTask(props.taskId)}>
+          <Icon name="trash" size={30} color="red" />
+        </TouchableOpacity>
       </View>
     </View>
   );

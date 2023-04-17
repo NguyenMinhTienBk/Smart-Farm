@@ -33,6 +33,22 @@ export default function ManualList() {
   const handleManual = () => {
     navigation.navigate("ManualView1");
   };
+  const updateTasks = (taskId) => {
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(updatedTasks);
+  };
+  const handleDeleteTask = async (taskId) => {
+    try {
+      // Gọi API để xóa task với id được truyền vào
+      await client.delete(`/delete-task/${taskId}`);
+      // Cập nhật lại danh sách tasks trong state của component cha (ManualList)
+      // Bạn có thể truyền hàm này từ component cha (ManualList) vào component con (Task) thông qua props
+      // và gọi nó ở đây để cập nhật lại danh sách tasks sau khi xóa
+      updateTasks(taskId);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // Hàm để định dạng ngày theo định dạng dd-mm-yyyy
   const formatSelectedDate = (date) => {
@@ -93,11 +109,13 @@ export default function ManualList() {
       <ScrollView>
         {sortedTasks.map((task, index) => (
           <Task
-            key={index}
+            key={task.id}
             waterAmount={task.waterAmount}
             selectedDate={formatSelectedDate(task.selectedDate)} // Sử dụng hàm formatSelectedDate để định dạng ngày
             selectedHour={formatSelectedHour(task.selectedHour)} // Sử dụng hàm formatSelectedHour để định dạng giờ
             count={index + 1}
+            taskId={task.id} // Truyền taskId vào để xóa task
+            handleDeleteTask={handleDeleteTask} // Truyền hàm xóa task vào
           />
         ))}
       </ScrollView>

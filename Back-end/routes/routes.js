@@ -10,6 +10,7 @@ const {
 const {
   createValueManual,
   getValueManualByEmail,
+  deleteTask,
 } = require("../controller/manual");
 
 router.post("/create-user", createUser);
@@ -22,6 +23,7 @@ router.put("/update-tree-system/:email", updateTreeSystemByEmail);
 
 router.post("/create-value-manual", createValueManual);
 router.get("/get-value-manual/:email", getValueManualByEmail);
+router.delete("/delete-task/:id", deleteTask);
 
 router.get("/", (req, res) => {
   res.json({ success: true, message: "Welcome to backend zone!" });
