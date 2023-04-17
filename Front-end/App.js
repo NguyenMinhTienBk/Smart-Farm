@@ -17,6 +17,7 @@ import HomeView2 from "./src/views/views2/Home";
 import SettingView2 from "./src/views/views2/Setting";
 import AutomaticView2 from "./src/views/views2/Automatic";
 import ManualView2 from "./src/views/views2/Manual";
+import ManualList from "./src/views/views2/ManualList";
 import ViewDeviceList from "./src/views/views2/ViewDeviceList";
 import DHT20 from "./src/views/views2/Device/DHT20";
 import YoloBit from "./src/views/views2/Device/YoloBit";
@@ -91,6 +92,11 @@ const App = () => {
           name="ManualView2"
           component={ManualView2}
           options={{ title: "Thiết lập tưới thủ công" }}
+        />
+        <Stack.Screen
+          name="ManualList"
+          component={ManualList}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Chart"

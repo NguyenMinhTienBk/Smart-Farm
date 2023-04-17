@@ -1,139 +1,157 @@
 import React, { useState, useEffect } from "react";
-import { ToastAndroid } from "react-native";
+
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Foundation } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRoute,useNavigation } from "@react-navigation/native";
 
 export default function WateringForm() {
-  const [amount, setAmount] = useState("");
-  const [selectedSystem, setSelectedSystem] = useState("");
-  const [time, setTime] = useState("");
+  
+  const navigation = useNavigation();
+  const handleManualList = () => {
+    navigation.navigate("ManualList");
+  };
+  const [waterAmount, setWaterAmount] = useState('');
+  
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const amountValue = await AsyncStorage.getItem("amount");
-        const systemValue = await AsyncStorage.getItem("system");
-        const timeValue = await AsyncStorage.getItem("time");
-        if (amountValue !== null) {
-          setAmount(amountValue);
-        }
-        if (systemValue !== null) {
-          setSelectedSystem(systemValue);
-        }
-        if (timeValue !== null) {
-          setTime(timeValue);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    getData();
-  }, []);
-
-  const handleSubmit = async () => {
-    try {
-      await AsyncStorage.setItem("amount", amount);
-      await AsyncStorage.setItem("system", selectedSystem);
-      await AsyncStorage.setItem("time", time);
-      ToastAndroid.show("Lưu thay đổi thành công !", ToastAndroid.SHORT);
-    } catch (e) {
-      console.error(e);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+  const [selectedHour, setSelectedHour] = useState(new Date());
+  const [showTimePicker, setshowTimePicker] = useState(false);
+  const [showList, setShowList] = useState(false);
+  const [selectedValue, setSelectedValue] = useState('không lặp lại');
+  const handleDateSelect = (event, date) => {
+    if (date) {
+      setSelectedDate(date);
+      setShowPicker(Platform.OS === 'ios');
+    } else {
+      setShowPicker(false);
     }
   };
 
-  const handleSystemSelection = (value) => {
-    setSelectedSystem(value);
+
+  // const showTimePicker = () => {
+  //   setSelectedHour(new Date());
+  // };
+
+  const handleTimeChange = (event, selectedTime) => {
+    if (selectedTime) {
+      setSelectedHour(selectedTime);
+      setshowTimePicker(Platform.OS === 'ios')
+    } else {
+      setshowTimePicker(false);
+    }
+  };
+  const handleIconPress = () => {
+    setShowList(!showList);
   };
 
+  const handleListItemPress = (value) => {
+    setSelectedValue(value);
+    setShowList(false);
+  };
   return (
     <View style={styles.container}>
-      <Text style={styles.question}>1. Nhập lượng nước cần tưới:</Text>
-      <TextInput
-        style={styles.input}
-        value={amount}
-        onChangeText={(text) => setAmount(text)}
-      />
-      <Text style={styles.question}>2. Chọn hệ thống tưới:</Text>
-      <View style={styles.radioContainer}>
-        <View style={styles.radioItem2}>
-          <TouchableOpacity
-            style={
-              selectedSystem === "Drip irrigation system"
-                ? styles.radioSelected
-                : styles.radio
-            }
-            onPress={() => handleSystemSelection("Drip irrigation system")}
-          >
-            <Text style={styles.radioText}>Hệ thống tưới nhỏ giọt</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.radioItem2}>
-          <TouchableOpacity
-            style={
-              selectedSystem === "Sprinkler irrigation system"
-                ? styles.radioSelected
-                : styles.radio
-            }
-            onPress={() => handleSystemSelection("Sprinkler irrigation system")}
-          >
-            <Text style={styles.radioText}>Hệ thống tưới phun sương</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.radioItem2}>
-          <TouchableOpacity
-            style={
-              selectedSystem === "Lawn irrigation system"
-                ? styles.radioSelected
-                : styles.radio
-            }
-            onPress={() => handleSystemSelection("Lawn irrigation system")}
-          >
-            <Text style={styles.radioText}>Hệ thống tưới cỏ</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.waterAmount}>
+        <Text style={styles.question}>Nhập Lượng nước cần tưới</Text>
+        <TextInput
+          style={styles.input}
+          value={waterAmount}
+          onChangeText={text => setWaterAmount(text)}
+          keyboardType="numeric"
+          placeholder="Nhập lượng nước bạn mong muốn vào đây"
+          placeholderTextColor="#999"
+          fontSize={17}
+        />
       </View>
-      <Text style={styles.question}>3. Thiết lập thời gian:</Text>
-      <View style={styles.dropdown}>
-        <Picker
-          selectedValue={time}
-          onValueChange={(itemValue) => setTime(itemValue)}
-        >
-          <Picker.Item label="0:00 AM" value="0:00 AM" />
-          <Picker.Item label="1:00 AM" value="1:00 AM" />
-          <Picker.Item label="2:00 AM" value="2:00 AM" />
-          <Picker.Item label="3:00 AM" value="3:00 AM" />
-          <Picker.Item label="4:00 AM" value="4:00 AM" />
-          <Picker.Item label="5:00 AM" value="5:00 AM" />
-          <Picker.Item label="6:00 AM" value="6:00 AM" />
-          <Picker.Item label="7:00 AM" value="7:00 AM" />
-          <Picker.Item label="8:00 AM" value="8:00 AM" />
-          <Picker.Item label="9:00 AM" value="9:00 AM" />
-          <Picker.Item label="10:00 AM" value="10:00 AM" />
-          <Picker.Item label="11:00 AM" value="11:00 AM" />
-          <Picker.Item label="12:00 AM" value="12:00 AM" />
-          <Picker.Item label="1:00 PM" value="1:00 PM" />
-          <Picker.Item label="2:00 PM" value="2:00 PM" />
-          <Picker.Item label="3:00 PM" value="3:00 PM" />
-          <Picker.Item label="4:00 PM" value="4:00 PM" />
-          <Picker.Item label="5:00 PM" value="5:00 PM" />
-          <Picker.Item label="6:00 PM" value="6:00 PM" />
-          <Picker.Item label="7:00 PM" value="7:00 PM" />
-          <Picker.Item label="8:00 PM" value="8:00 PM" />
-          <Picker.Item label="9:00 PM" value="9:00 PM" />
-          <Picker.Item label="10:00 PM" value="10:00 PM" />
-          <Picker.Item label="11:00 PM" value="11:00 PM" />
-        </Picker>
+      <View style={styles.setDateANDsetTime}>
+        <Text style={styles.question}>Cài đặt ngày và giờ cho lịch</Text>
+        <View style={styles.part}>
+          <TextInput
+            editable={false}
+            style={styles.input}
+            placeholder="Select date"
+            value={selectedDate.toLocaleDateString('vi-VN')}
+          />
+          <TouchableOpacity style={[styles.icon, { marginLeft: 12 }]} onPress={() => setShowPicker(true)}>
+            <Foundation name="calendar" size={35} color="white" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.part}>
+          <TextInput
+            editable={false}
+            style={styles.input}
+            value={selectedHour.toLocaleTimeString()}
+          />
+          <TouchableOpacity style={styles.icon} onPress={() => setshowTimePicker(true)}>
+            <Ionicons name="ios-alarm-outline" size={30} color="white" />
+          </TouchableOpacity>
+        </View>
+        {showPicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={handleDateSelect}
+          />
+        )}
+        {Platform.OS === 'android' && showTimePicker && (
+          <DateTimePicker
+            mode="time"
+            value={selectedHour}
+            onChange={handleTimeChange}
+          />
+        )}
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.radioText}>Thiết lập</Text>
-      </TouchableOpacity>
+      <View style={styles.repeatAction}>
+        <Text style={styles.question}>Lặp lại</Text>
+        <View style={styles.repeatWrapper}>
+          <TextInput
+            style={styles.input1}
+            value={selectedValue}
+            editable={false}
+          />
+          <TouchableOpacity onPress={handleIconPress}>
+            <AntDesign style={{ marginLeft: 13 }} name="caretdown" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+      </View>
+      {showList && (
+        <View style={styles.list}>
+          <TouchableOpacity onPress={() => handleListItemPress('Không lặp lại')}>
+            <Text style={styles.listItem}>Không lặp lại</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleListItemPress('Một lần một ngày')}>
+            <Text style={styles.listItem}>Một lần một ngày</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleListItemPress('Một lần 1 tuần')}>
+            <Text style={styles.listItem}>Một lần 1 tuần</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleListItemPress('Một lần một tháng')}>
+            <Text style={styles.listItem}>Một lần một tháng</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleListItemPress('Khác')}>
+            <Text style={styles.listItem}>Khác</Text>
+          </TouchableOpacity>
+
+        </View>
+      )}
+      <View style={styles.doneCheckbox}>
+        <TouchableOpacity onPress={handleManualList}>
+          <MaterialIcons style={styles.checkboxDone} name="done" size={50} color="#427ef5" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -144,65 +162,85 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#1F1D47",
   },
-
+  part: {
+    flexDirection: 'row',
+  },
+  icon: {
+    marginTop: 20,
+    marginLeft: 10,
+  },
   input: {
-    height: 50,
-    borderColor: "gray",
-    borderWidth: 1,
-    padding: 10,
-    marginBottom: 30,
-    backgroundColor: "#fff",
-    color: "red",
+    width: '90%',
     fontSize: 20,
+    color: 'white',
+    padding: 5,
+    marginBottom: 30,
+    borderBottomColor: 'white',
+    borderBottomWidth: 2
+  },
+  input1: {
+    width: '90%',
+    fontSize: 20,
+    color: 'white',
+    padding: 5,
+    marginBottom: 30,
+    border: 'none',
   },
   question: {
-    fontSize: 18,
+    fontSize: 26,
     fontWeight: "bold",
     marginTop: 10,
-    marginBottom: 20,
-    color: "#fff",
+    marginBottom: 10,
+    color: "#00B2FF",
   },
-  radioContainer: {
-    flexDirection: "column",
-    justifyContent: "flex-start",
-    marginBottom: 30,
-  },
-
-  radioItem2: {
-    width: 250,
-    marginVertical: 8,
-  },
-  radio: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-  },
-  radioSelected: {
-    borderWidth: 1,
-    borderColor: "#007AFF",
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-    backgroundColor: "green",
-  },
-  radioText: {
-    fontSize: 16,
-    color: "#fff",
-  },
-
   button: {
-    backgroundColor: "blue",
-    alignItems: "center",
-    padding: 15,
+    backgroundColor: "#00B2FF",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
     marginTop: 20,
   },
-  dropdown: {
-    borderColor: "#fff",
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  repeatWrapper: {
+    flexDirection: "row",
+  },
+  list: {
+
+    backgroundColor: "#2C2A4C",
+    borderRadius: 5,
+    position: 'absolute',
+    top: 300,
+    left: 0,
+    right: 0,
+    // bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listItem: {
+    color: 'white',
+    padding: 10,
+  },
+  doneCheckbox: {
+    width: 70,
+    height: 70,
+    backgroundColor: "#21a3d0",
+    borderRadius: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    position: 'absolute',
+
+    right: 0,
+    bottom: 0,
     borderWidth: 2,
-    backgroundColor: "#fff",
-    marginBottom: 20,
+    borderColor: "#eff7f8"
+  },
+  checkboxDone: {
+
+    fontSize: 40,
+        color: "#FFFFFF",
   },
 });
