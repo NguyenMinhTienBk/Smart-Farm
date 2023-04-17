@@ -1,0 +1,59 @@
+const ValueManual = require("../models/manual");
+
+// Controller function for creating manual value
+const createValueManual = async (req, res) => {
+  try {
+    const { waterAmount, selectedDate, selectedHour, selectedValue, email } =
+      req.body;
+
+    // Create a new instance of ValueManual model
+    const valueManual = new ValueManual({
+      waterAmount,
+      selectedDate,
+      selectedHour,
+      selectedValue,
+      email,
+    });
+
+    // Save the value manual to MongoDB
+    await valueManual.save();
+
+    res.json({ success: true, message: "Value manual created successfully" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to create value manual",
+      error: error.message,
+    });
+  }
+};
+
+// Controller function for getting manual value by email
+const getValueManualByEmail = async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    // Query MongoDB to get manual values by email
+    const valueManuals = await ValueManual.find({ email });
+
+    // Extract desired fields from valueManuals and create a new array of objects
+    const result = valueManuals.map((valueManual) => {
+      return {
+        waterAmount: valueManual.waterAmount,
+        selectedDate: valueManual.selectedDate,
+        selectedHour: valueManual.selectedHour,
+        selectedValue: valueManual.selectedValue,
+      };
+    });
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get manual values by email",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { createValueManual, getValueManualByEmail };

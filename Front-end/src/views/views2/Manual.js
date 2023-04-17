@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import client from "../../api/client";
 
 import {
   View,
@@ -8,37 +10,71 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { Foundation } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons';
-import { MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useRoute,useNavigation } from "@react-navigation/native";
+import { Foundation } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
 export default function WateringForm() {
-  
+  useEffect(() => {
+    const getEmail = async () => {
+      try {
+        const email = await AsyncStorage.getItem("email");
+        setEmail(email);
+      } catch (error) {
+        console.error("Error getting email from AsyncStorage:", error);
+      }
+    };
+    getEmail();
+  }, []);
   const navigation = useNavigation();
-  const handleManualList = () => {
-    navigation.navigate("ManualList");
+  const handleManualList = async () => {
+    try {
+      const response = await client.post(
+        "/create-value-manual",
+        {
+          waterAmount,
+          selectedDate,
+          selectedHour,
+          selectedValue,
+          email,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status === 200) {
+        // Gửi dữ liệu thành công, chuyển sang trang "ManualList"
+        navigation.navigate("ManualList");
+      } else {
+        // Xử lý khi gửi dữ liệu không thành công
+        // Ví dụ: Hiển thị thông báo lỗi
+        Alert.alert("Lỗi", "Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
-  const [waterAmount, setWaterAmount] = useState('');
-  
-
+  const [waterAmount, setWaterAmount] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [selectedHour, setSelectedHour] = useState(new Date());
   const [showTimePicker, setshowTimePicker] = useState(false);
   const [showList, setShowList] = useState(false);
-  const [selectedValue, setSelectedValue] = useState('không lặp lại');
+  const [selectedValue, setSelectedValue] = useState("không lặp lại");
   const handleDateSelect = (event, date) => {
     if (date) {
       setSelectedDate(date);
-      setShowPicker(Platform.OS === 'ios');
+      setShowPicker(Platform.OS === "ios");
     } else {
       setShowPicker(false);
     }
   };
-
 
   // const showTimePicker = () => {
   //   setSelectedHour(new Date());
@@ -47,7 +83,7 @@ export default function WateringForm() {
   const handleTimeChange = (event, selectedTime) => {
     if (selectedTime) {
       setSelectedHour(selectedTime);
-      setshowTimePicker(Platform.OS === 'ios')
+      setshowTimePicker(Platform.OS === "ios");
     } else {
       setshowTimePicker(false);
     }
@@ -67,7 +103,7 @@ export default function WateringForm() {
         <TextInput
           style={styles.input}
           value={waterAmount}
-          onChangeText={text => setWaterAmount(text)}
+          onChangeText={(text) => setWaterAmount(text)}
           keyboardType="numeric"
           placeholder="Nhập lượng nước bạn mong muốn vào đây"
           placeholderTextColor="#999"
@@ -81,9 +117,12 @@ export default function WateringForm() {
             editable={false}
             style={styles.input}
             placeholder="Select date"
-            value={selectedDate.toLocaleDateString('vi-VN')}
+            value={selectedDate.toLocaleDateString("vi-VN")}
           />
-          <TouchableOpacity style={[styles.icon, { marginLeft: 12 }]} onPress={() => setShowPicker(true)}>
+          <TouchableOpacity
+            style={[styles.icon, { marginLeft: 12 }]}
+            onPress={() => setShowPicker(true)}
+          >
             <Foundation name="calendar" size={35} color="white" />
           </TouchableOpacity>
         </View>
@@ -93,7 +132,10 @@ export default function WateringForm() {
             style={styles.input}
             value={selectedHour.toLocaleTimeString()}
           />
-          <TouchableOpacity style={styles.icon} onPress={() => setshowTimePicker(true)}>
+          <TouchableOpacity
+            style={styles.icon}
+            onPress={() => setshowTimePicker(true)}
+          >
             <Ionicons name="ios-alarm-outline" size={30} color="white" />
           </TouchableOpacity>
         </View>
@@ -105,7 +147,7 @@ export default function WateringForm() {
             onChange={handleDateSelect}
           />
         )}
-        {Platform.OS === 'android' && showTimePicker && (
+        {Platform.OS === "android" && showTimePicker && (
           <DateTimePicker
             mode="time"
             value={selectedHour}
@@ -122,34 +164,50 @@ export default function WateringForm() {
             editable={false}
           />
           <TouchableOpacity onPress={handleIconPress}>
-            <AntDesign style={{ marginLeft: 13 }} name="caretdown" size={24} color="white" />
+            <AntDesign
+              style={{ marginLeft: 13 }}
+              name="caretdown"
+              size={24}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
-
       </View>
       {showList && (
         <View style={styles.list}>
-          <TouchableOpacity onPress={() => handleListItemPress('Không lặp lại')}>
+          <TouchableOpacity
+            onPress={() => handleListItemPress("Không lặp lại")}
+          >
             <Text style={styles.listItem}>Không lặp lại</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleListItemPress('Một lần một ngày')}>
+          <TouchableOpacity
+            onPress={() => handleListItemPress("Một lần một ngày")}
+          >
             <Text style={styles.listItem}>Một lần một ngày</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleListItemPress('Một lần 1 tuần')}>
+          <TouchableOpacity
+            onPress={() => handleListItemPress("Một lần 1 tuần")}
+          >
             <Text style={styles.listItem}>Một lần 1 tuần</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleListItemPress('Một lần một tháng')}>
+          <TouchableOpacity
+            onPress={() => handleListItemPress("Một lần một tháng")}
+          >
             <Text style={styles.listItem}>Một lần một tháng</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleListItemPress('Khác')}>
+          <TouchableOpacity onPress={() => handleListItemPress("Khác")}>
             <Text style={styles.listItem}>Khác</Text>
           </TouchableOpacity>
-
         </View>
       )}
       <View style={styles.doneCheckbox}>
         <TouchableOpacity onPress={handleManualList}>
-          <MaterialIcons style={styles.checkboxDone} name="done" size={50} color="#427ef5" />
+          <MaterialIcons
+            style={styles.checkboxDone}
+            name="done"
+            size={50}
+            color="#427ef5"
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -163,28 +221,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#1F1D47",
   },
   part: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   icon: {
     marginTop: 20,
     marginLeft: 10,
   },
   input: {
-    width: '90%',
+    width: "90%",
     fontSize: 20,
-    color: 'white',
+    color: "white",
     padding: 5,
     marginBottom: 30,
-    borderBottomColor: 'white',
-    borderBottomWidth: 2
+    borderBottomColor: "white",
+    borderBottomWidth: 2,
   },
   input1: {
-    width: '90%',
+    width: "90%",
     fontSize: 20,
-    color: 'white',
+    color: "white",
     padding: 5,
     marginBottom: 30,
-    border: 'none',
+    border: "none",
   },
   question: {
     fontSize: 26,
@@ -209,19 +267,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   list: {
-
     backgroundColor: "#2C2A4C",
     borderRadius: 5,
-    position: 'absolute',
+    position: "absolute",
     top: 300,
     left: 0,
     right: 0,
     // bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   listItem: {
-    color: 'white',
+    color: "white",
     padding: 10,
   },
   doneCheckbox: {
@@ -231,16 +288,15 @@ const styles = StyleSheet.create({
     borderRadius: 44,
     alignItems: "center",
     justifyContent: "center",
-    position: 'absolute',
+    position: "absolute",
 
     right: 0,
     bottom: 0,
     borderWidth: 2,
-    borderColor: "#eff7f8"
+    borderColor: "#eff7f8",
   },
   checkboxDone: {
-
     fontSize: 40,
-        color: "#FFFFFF",
+    color: "#FFFFFF",
   },
 });
