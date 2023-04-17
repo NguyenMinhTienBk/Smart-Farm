@@ -49,7 +49,7 @@ export default function WateringForm() {
       );
       if (response.status === 200) {
         // Gửi dữ liệu thành công, chuyển sang trang "ManualList"
-        navigation.navigate("ManualList");
+        navigation.navigate("ManualList2");
       } else {
         // Xử lý khi gửi dữ liệu không thành công
         // Ví dụ: Hiển thị thông báo lỗi

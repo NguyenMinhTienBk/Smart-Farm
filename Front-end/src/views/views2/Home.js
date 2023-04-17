@@ -95,7 +95,7 @@ const HomeScreen = () => {
     navigation.navigate("AutomaticView2");
   };
   const handleManual = () => {
-    navigation.navigate("ManualView2");
+    navigation.navigate("ManualList2");
   };
 
   return (

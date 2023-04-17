@@ -100,7 +100,7 @@ const HomeScreen = () => {
     navigation.navigate("AutomaticView1");
   };
   const handleManual = () => {
-    navigation.navigate("ManualView1");
+    navigation.navigate("ManualList1");
   };
 
   return (

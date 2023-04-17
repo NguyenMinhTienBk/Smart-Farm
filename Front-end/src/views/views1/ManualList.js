@@ -31,7 +31,7 @@ export default function ManualList() {
   const [tasks, setTasks] = useState([]);
 
   const handleManual = () => {
-    navigation.navigate("ManualView2");
+    navigation.navigate("ManualView1");
   };
 
   // Hàm để định dạng ngày theo định dạng dd-mm-yyyy
