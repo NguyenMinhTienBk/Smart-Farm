@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { createUser, userSignIn } = require("../controller/user");
+const { createUser, userSignIn, getUser } = require("../controller/user");
 const {
   createTreeSystem,
   getTreeSystemByEmail,
@@ -9,6 +9,7 @@ const {
 
 router.post("/create-user", createUser);
 router.post("/sign-in", userSignIn);
+router.get("/get-user/:email", getUser);
 
 router.get("/get-tree-system/:email", getTreeSystemByEmail);
 router.post("/create-tree-system", createTreeSystem);
