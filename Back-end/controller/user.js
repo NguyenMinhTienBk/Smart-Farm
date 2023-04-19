@@ -63,8 +63,30 @@ const getUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  try {
+    const email = req.params.email; // Lấy giá trị email từ request params
+    const { fullname } = req.body;
+
+    const user = await User.findByEmail(email);
+    if (user) {
+      user.fullname = fullname;
+      await user.save(); // Lưu lại vào cơ sở dữ liệu
+      res.json(user);
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Không tìm thấy người dùng với email này!",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Đã xảy ra lỗi!" });
+  }
+};
+
 module.exports = {
   createUser: createUser,
   userSignIn: userSignIn,
   getUser: getUser,
+  updateUser: updateUser,
 };
