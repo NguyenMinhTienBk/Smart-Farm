@@ -23,8 +23,11 @@ const Setting = () => {
   const handleLogout = () => {
     navigation.navigate("Login");
   };
-  const [toggle1, setToggle1] = useState(false);
-  const [toggle2, setToggle2] = useState(false);
+
+  const handleTree = () => {
+    navigation.navigate("Tree");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -58,24 +61,10 @@ const Setting = () => {
           </Text>
           <Icon name="keyboard-arrow-right" size={20} style={styles.icon} />
         </TouchableOpacity>
-        <View style={styles.toggleContainer}>
-          <Text style={styles.text}>Nhận thông báo</Text>
-          <Switch
-            trackColor={{ true: "red", false: "grey" }}
-            thumbColor="#FFF"
-            value={toggle1}
-            onValueChange={setToggle1}
-          />
-        </View>
-        <View style={styles.toggleContainer}>
-          <Text style={styles.text}>Chế độ tối</Text>
-          <Switch
-            trackColor={{ true: "red", false: "grey" }}
-            thumbColor="#FFF"
-            value={toggle2}
-            onValueChange={setToggle2}
-          />
-        </View>
+        <TouchableOpacity style={styles.rowContainer} onPress={handleTree}>
+          <Text style={styles.text}>Thêm cây trồng</Text>
+          <Icon name="keyboard-arrow-right" size={20} style={styles.icon} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.rowContainer} onPress={handleLogout}>
           <Text style={styles.text}>Đăng xuất</Text>
           <Icon name="keyboard-arrow-right" size={20} style={styles.icon} />

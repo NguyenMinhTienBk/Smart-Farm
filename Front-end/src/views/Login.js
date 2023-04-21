@@ -94,10 +94,10 @@ const LoginScreen = () => {
       <View style={styles.form}>
         <Text style={styles.bigTitle}>Chào mừng</Text>
         <Text style={styles.formTitle}>Đăng nhập tài khoản của bạn</Text>
-        <Text style={styles.label}>Email:</Text>
+        <Text style={styles.label}>SĐT:</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nhập email"
+          placeholder="Nhập SĐT"
           value={email}
           onChangeText={setEmail}
         />

@@ -6,12 +6,27 @@ import client from "../../api/client";
 
 export default function Automatic() {
   const [selectedPlant, setSelectedPlant] = useState("");
-  const [selectedSystem, setSelectedSystem] = useState("");
   const [email, setEmail] = useState("");
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
     retrieveEmail();
     getDataFromBackend();
+  }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Lấy giá trị email từ AsyncStorage
+        const email = await AsyncStorage.getItem("email");
+        // Gọi API với email lấy được từ AsyncStorage
+        const response = await client.get(`/get-tree/${email}`);
+        // Lấy dữ liệu trả về từ API và cập nhật vào state tasks
+        setTasks(response.data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchData();
   }, []);
 
   const getDataFromBackend = async () => {
@@ -21,10 +36,8 @@ export default function Automatic() {
       // Kiểm tra xem email từ AsyncStorage có trùng với email từ backend hay không
       if (email === response.data.email) {
         setSelectedPlant(response.data.selectedPlant);
-        setSelectedSystem(response.data.selectedSystem);
       } else {
         setSelectedPlant(null); // Nếu không trùng thì set selectedPlant là null
-        setSelectedSystem(null); // Nếu không trùng thì set selectedSystem là null
       }
     } catch (error) {
       console.log(error);
@@ -46,10 +59,6 @@ export default function Automatic() {
     setSelectedPlant(value);
   };
 
-  const handleSystemSelection = (value) => {
-    setSelectedSystem(value);
-  };
-
   const handleSave = async () => {
     try {
       // Kiểm tra dữ liệu có tồn tại trong MongoDB hay không
@@ -59,14 +68,12 @@ export default function Automatic() {
         // Nếu đã tồn tại dữ liệu, thực hiện gọi API update
         await client.put(`/update-tree-system/${email}`, {
           selectedPlant: selectedPlant,
-          selectedSystem: selectedSystem,
         });
         ToastAndroid.show("Cập nhật thành công!", ToastAndroid.SHORT);
       } else {
         // Nếu chưa tồn tại dữ liệu, thực hiện gọi API create
         await client.post("/create-tree-system", {
           selectedPlant: selectedPlant,
-          selectedSystem: selectedSystem,
           email: email,
         });
         ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
@@ -76,7 +83,6 @@ export default function Automatic() {
         // Nếu nhận được lỗi 404, thực hiện gọi API create
         await client.post("/create-tree-system", {
           selectedPlant: selectedPlant,
-          selectedSystem: selectedSystem,
           email: email,
         });
         ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
@@ -90,76 +96,22 @@ export default function Automatic() {
     <View style={styles.container}>
       <Text style={styles.question}>1. Chọn loại cây cần tưới:</Text>
       <View style={styles.radioContainer}>
-        <View style={styles.radioItem}>
-          <TouchableOpacity
-            style={
-              selectedPlant === "Cải bắp" ? styles.radioSelected : styles.radio
-            }
-            onPress={() => handlePlantSelection("Cải bắp")}
-          >
-            <Text style={styles.radioText}>Cải bắp</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.radioItem}>
-          <TouchableOpacity
-            style={
-              selectedPlant === "Cây xoài" ? styles.radioSelected : styles.radio
-            }
-            onPress={() => handlePlantSelection("Cây xoài")}
-          >
-            <Text style={styles.radioText}>Cây xoài</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.radioItem}>
-          <TouchableOpacity
-            style={
-              selectedPlant === "Cây táo" ? styles.radioSelected : styles.radio
-            }
-            onPress={() => handlePlantSelection("Cây táo")}
-          >
-            <Text style={styles.radioText}>Cây táo</Text>
-          </TouchableOpacity>
-        </View>
+        {tasks.map((item) => (
+          <View style={styles.radioItem} key={item.id}>
+            <TouchableOpacity
+              style={
+                selectedPlant === item.treeName
+                  ? styles.radioSelected
+                  : styles.radio
+              }
+              onPress={() => handlePlantSelection(item.treeName)}
+            >
+              <Text style={styles.radioText}>{item.treeName}</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
       </View>
-      <Text style={styles.question}>2. Chọn hệ thống tưới:</Text>
-      <View style={styles.radioContainer}>
-        <View style={styles.radioItem2}>
-          <TouchableOpacity
-            style={
-              selectedSystem === "Hệ thống tưới nhỏ giọt"
-                ? styles.radioSelected
-                : styles.radio
-            }
-            onPress={() => handleSystemSelection("Hệ thống tưới nhỏ giọt")}
-          >
-            <Text style={styles.radioText}>Hệ thống tưới nhỏ giọt</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.radioItem2}>
-          <TouchableOpacity
-            style={
-              selectedSystem === "Hệ thống tưới phun sương"
-                ? styles.radioSelected
-                : styles.radio
-            }
-            onPress={() => handleSystemSelection("Hệ thống tưới phun sương")}
-          >
-            <Text style={styles.radioText}>Hệ thống tưới phun sương</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.radioItem2}>
-          <TouchableOpacity
-            style={
-              selectedSystem === "Hệ thống tưới cỏ"
-                ? styles.radioSelected
-                : styles.radio
-            }
-            onPress={() => handleSystemSelection("Hệ thống tưới cỏ")}
-          >
-            <Text style={styles.radioText}>Hệ thống tưới cỏ</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Thiết lập</Text>
       </TouchableOpacity>

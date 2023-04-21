@@ -9,10 +9,6 @@ const automaticSchema = new mongoose.Schema({
     type: String,
     required: true, // thay đổi require thành required
   },
-  selectedSystem: {
-    type: String,
-    required: true, // thay đổi require thành required
-  },
 });
 
 automaticSchema.statics.findByEmail = function (email) {

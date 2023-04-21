@@ -5,6 +5,9 @@ import Login from "./src/views/Login";
 import Option from "./src/views/Option";
 import Register from "./src/views/Register";
 import CheckVermin from "./src/views/CheckVermin";
+import Notify from "./src/views/Notify";
+import Tree from "./src/views/Tree";
+import TreeList from "./src/views/TreeList";
 
 import HomeView1 from "./src/views/views1/Home";
 import SettingView1 from "./src/views/views1/Setting";
@@ -67,6 +70,7 @@ const App = () => {
           component={SettingView2}
           options={{ title: "Cài đặt" }}
         />
+
         <Stack.Screen
           name="ViewDeviceList"
           component={ViewDeviceList}
@@ -148,6 +152,21 @@ const App = () => {
           name="Light"
           component={Light}
           options={{ title: "Cảm biến ánh sáng" }}
+        />
+        <Stack.Screen
+          name="Notify"
+          component={Notify}
+          options={{ title: "Thông báo" }}
+        />
+        <Stack.Screen
+          name="Tree"
+          component={Tree}
+          options={{ title: "Thêm cây trồng" }}
+        />
+        <Stack.Screen
+          name="TreeList"
+          component={TreeList}
+          options={{ title: "Danh sách cây trồng" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

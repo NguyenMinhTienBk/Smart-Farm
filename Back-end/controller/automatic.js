@@ -1,14 +1,13 @@
 const Automatic = require("../models/automatic");
 
 const createTreeSystem = async (req, res) => {
-  const { email, selectedPlant, selectedSystem } = req.body; // Lấy giá trị của selectedPlant và selectedSystem từ req.body
+  const { email, selectedPlant } = req.body; // Lấy giá trị của selectedPlant và selectedSystem từ req.body
   console.log(req.body); // In ra req.body lên console cho mục đích gỡ lỗi hoặc theo dõi
 
   // Tạo một đối tượng mới từ mô hình Tree với các giá trị đã lấy từ request body
   const tree = await Automatic({
     email,
     selectedPlant,
-    selectedSystem,
   });
 
   // Lưu đối tượng cây vào cơ sở dữ liệu
@@ -41,13 +40,12 @@ const getTreeSystemByEmail = async (req, res) => {
 const updateTreeSystemByEmail = async (req, res) => {
   try {
     const email = req.params.email; // Lấy giá trị email từ request params
-    const { selectedPlant, selectedSystem } = req.body; // Lấy giá trị của selectedPlant và selectedSystem từ req.body
+    const { selectedPlant } = req.body; // Lấy giá trị của selectedPlant và selectedSystem từ req.body
     // Tìm kiếm đối tượng cây theo email
     const tree = await Automatic.findByEmail(email);
     if (tree) {
       // Nếu tìm thấy, cập nhật selectedPlant và selectedSystem
       tree.selectedPlant = selectedPlant;
-      tree.selectedSystem = selectedSystem;
       await tree.save(); // Lưu lại vào cơ sở dữ liệu
       res.json(tree); // Trả về đối tượng cây đã được cập nhật dưới dạng JSON response
     } else {

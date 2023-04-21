@@ -18,6 +18,12 @@ const {
   deleteTask,
 } = require("../controller/manual");
 
+const {
+  createTree,
+  getTreeByEmail,
+  deleteTree,
+} = require("../controller/tree");
+
 const { createNotify, getNotify } = require("../controller/notify");
 const { createDevice, getDevice } = require("../controller/device");
 
@@ -36,6 +42,11 @@ router.put("/update-tree-system/:email", updateTreeSystemByEmail);
 router.post("/create-value-manual", createValueManual);
 router.get("/get-value-manual/:email", getValueManualByEmail);
 router.delete("/delete-task/:id", deleteTask);
+
+//Tree
+router.post("/create-tree", createTree);
+router.get("/get-tree/:email", getTreeByEmail);
+router.delete("/delete-tree/:id", deleteTree);
 
 //Notify
 router.post("/create-notify", createNotify);
