@@ -5,6 +5,7 @@ import sunrain from "../../../assets/weather/sunrain.png";
 import cloud from "../../../assets/weather/cloud.png";
 import TabBar from "../../components/TabBar";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AntDesign, Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   StyleSheet,
@@ -15,10 +16,13 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import client from "../../api/client";
 
 const HomeScreen = () => {
   const [weatherData, setWeatherData] = useState(null);
+  const [setPump, setSetPump] = useState(0);
   const [setPump1, setSetPump1] = useState(0);
+  const [buttonPump, setButtonPump] = useState("Bật máy bơm");
   const [buttonText, setButtonText] = useState("Tưới 1");
   const [setPump2, setSetPump2] = useState(0);
   const [buttonText2, setButtonText2] = useState("Tưới 2");
@@ -26,6 +30,7 @@ const HomeScreen = () => {
   const [humidity, setHumidity] = useState(null);
   const [light, setLight] = useState(null);
   const [soilmoisture, setSoilMoisture] = useState(null);
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +69,13 @@ const HomeScreen = () => {
         setHumidity(humidityData);
         setLight(lightData);
         setSoilMoisture(soilMoistureData);
+
+        // Lấy giá trị email từ AsyncStorage
+        const email = await AsyncStorage.getItem("email");
+        // Gọi API với email lấy được từ AsyncStorage
+        const response = await client.get(`/get-value-manual/${email}`);
+        // Lấy dữ liệu trả về từ API và cập nhật vào state tasks
+        setTasks(response.data.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -85,6 +97,61 @@ const HomeScreen = () => {
     return <Text>Loading...</Text>;
   }
 
+  // Hàm để so sánh thời gian của hai công việc
+  const compareTasksByTime = (task1, task2) => {
+    const date1 = new Date(task1.selectedDate);
+    const date2 = new Date(task2.selectedDate);
+    const hour1 = new Date(task1.selectedHour);
+    const hour2 = new Date(task2.selectedHour);
+
+    // So sánh ngày
+    if (date1 < date2) {
+      return -1;
+    }
+    if (date1 > date2) {
+      return 1;
+    }
+
+    // Nếu ngày bằng nhau, tiếp tục so sánh giờ
+    if (hour1 < hour2) {
+      return -1;
+    }
+    if (hour1 > hour2) {
+      return 1;
+    }
+
+    return 0;
+  };
+
+  const formatSelectedDate = (date) => {
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+    return `${day < 10 ? "0" + day : day}:${
+      month < 10 ? "0" + month : month
+    }:${year}`;
+  };
+
+  // Hàm để định dạng giờ theo định dạng hh:mm
+  const formatSelectedHour = (hour) => {
+    const d = new Date(hour);
+    const minutes = d.getMinutes();
+    const hours = d.getHours();
+    return `${hours < 10 ? "0" + hours : hours}:${
+      minutes < 10 ? "0" + minutes : minutes
+    }`;
+  };
+
+  // Sắp xếp danh sách công việc theo thời gian gần nhất đến xa nhất
+  const sortedTasks = [...tasks].sort(compareTasksByTime);
+  const taskPost = sortedTasks.map((task) => {
+    return {
+      amountOfWater: task.waterAmount,
+      date: formatSelectedDate(task.selectedDate),
+      hour: formatSelectedHour(task.selectedHour),
+    };
+  });
   const extractedData =
     weatherData &&
     weatherData.list &&
@@ -128,6 +195,43 @@ const HomeScreen = () => {
     navigation.navigate("ManualList1");
   };
 
+  const updateSetPump = async (value) => {
+    const url =
+      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
+    const headers = {
+      "X-Authorization":
+        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+      "Content-Type": "application/json",
+    };
+    const data = { ...value };
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        console.log(`SetPump updated to ${value}`);
+      } else {
+        console.error("Failed to update SetPump1");
+      }
+    } catch (error) {
+      console.error(`Failed to update SetPump: ${error}`);
+    }
+  };
+
+  const handleTogglePump = () => {
+    const newPumpValue = setPump === 0 ? 1 : 0;
+    const newModeValue = 1;
+    updateSetPump({
+      Mode: newModeValue,
+      setPump: newPumpValue,
+    });
+
+    setSetPump(newPumpValue);
+    setButtonPump(newPumpValue === 1 ? "Tắt máy bơm" : "Bật máy bơm");
+  };
+
   const updateSetPump1 = async (value) => {
     const url =
       "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
@@ -155,8 +259,11 @@ const HomeScreen = () => {
 
   const handleTogglePump1 = () => {
     const newPumpValue = setPump1 === 0 ? 1 : 0;
-    const newModeValue = 1;
-    updateSetPump1({ SetPump: newPumpValue, Mode: newModeValue });
+    const newModeValue = 3;
+    updateSetPump1({
+      Mode: newModeValue,
+    });
+
     setSetPump1(newPumpValue);
     setButtonText(newPumpValue === 1 ? "Dừng" : "Tưới 1");
   };
@@ -189,7 +296,7 @@ const HomeScreen = () => {
   const handleTogglePump2 = () => {
     const newPumpValue = setPump2 === 0 ? 1 : 0;
     const newModeValue = 2;
-    updateSetPump2({ SetPump: newPumpValue, Mode: newModeValue });
+    updateSetPump2({ Mode: newModeValue, Tasks: taskPost });
     setSetPump2(newPumpValue);
     setButtonText2(newPumpValue === 1 ? "Dừng" : "Tưới 2");
   };
@@ -272,6 +379,20 @@ const HomeScreen = () => {
             </View>
           ))}
         </ScrollView>
+      </View>
+
+      <View>
+        <TouchableOpacity
+          style={[
+            styles.autoButton,
+            {
+              backgroundColor: buttonPump === "Bật máy bơm" ? "grey" : "red",
+            },
+          ]}
+          onPress={handleTogglePump}
+        >
+          <Text style={styles.autoWateringButtonText}>{buttonPump}</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.autoWateringContainer}>
@@ -473,6 +594,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#48319D",
     opacity: 0.8,
     borderRadius: 10,
+  },
+  autoButton: {
+    marginTop: 10,
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: "grey",
+    opacity: 0.8,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "50%",
   },
   autoWateringButtonText: {
     color: "#FFF",

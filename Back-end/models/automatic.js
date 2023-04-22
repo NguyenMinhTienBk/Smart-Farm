@@ -9,6 +9,10 @@ const automaticSchema = new mongoose.Schema({
     type: String,
     required: true, // thay đổi require thành required
   },
+  selectedDate: {
+    type: Date,
+    required: true,
+  },
 });
 
 automaticSchema.statics.findByEmail = function (email) {

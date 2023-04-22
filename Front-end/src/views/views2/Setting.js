@@ -25,7 +25,7 @@ const Setting = () => {
   };
 
   const handleTree = () => {
-    navigation.navigate("Tree");
+    navigation.navigate("TreeList");
   };
 
   return (
@@ -62,7 +62,7 @@ const Setting = () => {
           <Icon name="keyboard-arrow-right" size={20} style={styles.icon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.rowContainer} onPress={handleTree}>
-          <Text style={styles.text}>Thêm cây trồng</Text>
+          <Text style={styles.text}>Danh sách cây trồng</Text>
           <Icon name="keyboard-arrow-right" size={20} style={styles.icon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.rowContainer} onPress={handleLogout}>

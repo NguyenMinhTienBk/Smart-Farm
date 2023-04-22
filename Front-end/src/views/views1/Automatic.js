@@ -6,6 +6,7 @@ import client from "../../api/client";
 
 export default function Automatic() {
   const [selectedPlant, setSelectedPlant] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [email, setEmail] = useState("");
   const [tasks, setTasks] = useState([]);
 
@@ -54,9 +55,23 @@ export default function Automatic() {
       console.log(error);
     }
   };
+  const formatSelectedDate = (date) => {
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+    return `${day < 10 ? "0" + day : day}:${
+      month < 10 ? "0" + month : month
+    }:${year}`;
+  };
 
   const handlePlantSelection = (value) => {
     setSelectedPlant(value);
+    // Duyệt qua danh sách tasks để tìm task chứa treeName tương ứng với selectedPlant
+    const selectedTask = tasks.find((task) => task.treeName === value);
+    if (selectedTask) {
+      setSelectedDate(formatSelectedDate(selectedTask.selectedDate));
+    }
   };
 
   const handleSave = async () => {
@@ -68,14 +83,46 @@ export default function Automatic() {
         // Nếu đã tồn tại dữ liệu, thực hiện gọi API update
         await client.put(`/update-tree-system/${email}`, {
           selectedPlant: selectedPlant,
+          selectedDate: selectedDate,
         });
+        await fetch(
+          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE",
+          {
+            method: "POST",
+            headers: {
+              "X-Authorization":
+                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              croptype: selectedPlant.toUpperCase(),
+              cropday: `${selectedPlant.toUpperCase()}:${selectedDate}`,
+            }),
+          }
+        );
         ToastAndroid.show("Cập nhật thành công!", ToastAndroid.SHORT);
       } else {
         // Nếu chưa tồn tại dữ liệu, thực hiện gọi API create
         await client.post("/create-tree-system", {
           selectedPlant: selectedPlant,
+          selectedDate: selectedDate,
           email: email,
         });
+        await fetch(
+          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE",
+          {
+            method: "POST",
+            headers: {
+              "X-Authorization":
+                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              selectedPlant: selectedPlant,
+              selectedDate: selectedDate,
+            }),
+          }
+        );
         ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
       }
     } catch (error) {
@@ -83,8 +130,24 @@ export default function Automatic() {
         // Nếu nhận được lỗi 404, thực hiện gọi API create
         await client.post("/create-tree-system", {
           selectedPlant: selectedPlant,
+          selectedDate: selectedDate,
           email: email,
         });
+        await fetch(
+          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE",
+          {
+            method: "POST",
+            headers: {
+              "X-Authorization":
+                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              selectedPlant: selectedPlant,
+              selectedDate: selectedDate,
+            }),
+          }
+        );
         ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
       } else {
         console.log(error);

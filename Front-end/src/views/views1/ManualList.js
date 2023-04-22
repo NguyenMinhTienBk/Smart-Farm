@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
 import Task from "./Task";
@@ -56,9 +57,9 @@ export default function ManualList() {
     const day = d.getDate();
     const month = d.getMonth() + 1;
     const year = d.getFullYear();
-    return `${day < 10 ? "0" + day : day}-${
+    return `${day < 10 ? "0" + day : day}:${
       month < 10 ? "0" + month : month
-    }-${year}`;
+    }:${year}`;
   };
 
   // Hàm để định dạng giờ theo định dạng hh:mm

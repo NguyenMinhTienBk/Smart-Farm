@@ -4,14 +4,9 @@ import sun from "../../../assets/weather/sun.png";
 import sunrain from "../../../assets/weather/sunrain.png";
 import cloud from "../../../assets/weather/cloud.png";
 import TabBar2 from "../../components/TabBar2";
-import {
-  AntDesign,
-  Entypo,
-  FontAwesome5,
-  FontAwesome,
-  MaterialCommunityIcons,
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AntDesign, Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   StyleSheet,
   View,
@@ -21,43 +16,142 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import client from "../../api/client";
 
 const HomeScreen = () => {
   const [weatherData, setWeatherData] = useState(null);
+  const [setPump, setSetPump] = useState(0);
+  const [setPump1, setSetPump1] = useState(0);
+  const [buttonPump, setButtonPump] = useState("Bật máy bơm");
+  const [buttonText, setButtonText] = useState("Tưới 1");
+  const [setPump2, setSetPump2] = useState(0);
+  const [buttonText2, setButtonText2] = useState("Tưới 2");
+  const [temperature, setTemperature] = useState(null);
+  const [humidity, setHumidity] = useState(null);
+  const [light, setLight] = useState(null);
+  const [soilmoisture, setSoilMoisture] = useState(null);
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    const fetchWeatherData = async () => {
-      const response = await fetch(
-        "https://api.openweathermap.org/data/2.5/forecast?q=Ho%20Chi%20Minh&units=metric&appid=05e89b040c9ca6ccc33fbdd46c4c3272"
-      );
-      const json = await response.json();
-      setWeatherData(json);
+    const fetchData = async () => {
+      try {
+        // Fetch dữ liệu thời tiết
+        const weatherResponse = await fetch(
+          "https://api.openweathermap.org/data/2.5/forecast?q=Ho%20Chi%20Minh&units=metric&appid=05e89b040c9ca6ccc33fbdd46c4c3272"
+        );
+        const weatherData = await weatherResponse.json();
+        setWeatherData(weatherData);
+
+        // Fetch dữ liệu thiết bị
+        const deviceResponse = await fetch(
+          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/values/timeseries?keys=temperature%2Chumidity%2Clight%2Csoilmoisture",
+          {
+            headers: {
+              "X-Authorization":
+                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const deviceData = await deviceResponse.json();
+
+        // Lấy giá trị temperature, humidity, light, soilmoisture từ dữ liệu nhận về
+        const temperatureData =
+          deviceData.temperature && deviceData.temperature[0]?.value;
+        const humidityData =
+          deviceData.humidity && deviceData.humidity[0]?.value;
+        const lightData = deviceData.light && deviceData.light[0]?.value;
+        const soilMoistureData =
+          deviceData.soilmoisture && deviceData.soilmoisture[0]?.value;
+
+        // Cập nhật state với dữ liệu lấy về từ thiết bị
+        setTemperature(temperatureData);
+        setHumidity(humidityData);
+        setLight(lightData);
+        setSoilMoisture(soilMoistureData);
+
+        // Lấy giá trị email từ AsyncStorage
+        const email = await AsyncStorage.getItem("email");
+        // Gọi API với email lấy được từ AsyncStorage
+        const response = await client.get(`/get-value-manual/${email}`);
+        // Lấy dữ liệu trả về từ API và cập nhật vào state tasks
+        setTasks(response.data.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
-    fetchWeatherData();
+
+    fetchData();
   }, []);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const [weatherData, weatherRealTime] = await Promise.all([
-  //       fetch(
-  //         "https://api.openweathermap.org/data/2.5/forecast?q=Ho%20Chi%20Minh&units=metric&appid=05e89b040c9ca6ccc33fbdd46c4c3272"
-  //       ).then((res) => res.json()),
-  //       fetch(
-  //         "https://api.openweathermap.org/data/2.5/weather?q=Ho%20chi%20minh&units=metric&appid=d78fd1588e1b7c0c2813576ba183a667"
-  //       ).then((res) => res.json()),
-  //     ]);
-  //     setWeatherData(weatherData);
-  //     setWeatherRealTime(weatherRealTime);
-  //   };
-
-  //   fetchData();
-  // }, []);
 
   if (!weatherData) {
     return <Text>Loading...</Text>;
   }
 
+  if (
+    temperature === null ||
+    humidity === null ||
+    light === null ||
+    soilmoisture === null
+  ) {
+    return <Text>Loading...</Text>;
+  }
+
+  // Hàm để so sánh thời gian của hai công việc
+  const compareTasksByTime = (task1, task2) => {
+    const date1 = new Date(task1.selectedDate);
+    const date2 = new Date(task2.selectedDate);
+    const hour1 = new Date(task1.selectedHour);
+    const hour2 = new Date(task2.selectedHour);
+
+    // So sánh ngày
+    if (date1 < date2) {
+      return -1;
+    }
+    if (date1 > date2) {
+      return 1;
+    }
+
+    // Nếu ngày bằng nhau, tiếp tục so sánh giờ
+    if (hour1 < hour2) {
+      return -1;
+    }
+    if (hour1 > hour2) {
+      return 1;
+    }
+
+    return 0;
+  };
+
+  const formatSelectedDate = (date) => {
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+    return `${day < 10 ? "0" + day : day}:${
+      month < 10 ? "0" + month : month
+    }:${year}`;
+  };
+
+  // Hàm để định dạng giờ theo định dạng hh:mm
+  const formatSelectedHour = (hour) => {
+    const d = new Date(hour);
+    const minutes = d.getMinutes();
+    const hours = d.getHours();
+    return `${hours < 10 ? "0" + hours : hours}:${
+      minutes < 10 ? "0" + minutes : minutes
+    }`;
+  };
+
+  // Sắp xếp danh sách công việc theo thời gian gần nhất đến xa nhất
+  const sortedTasks = [...tasks].sort(compareTasksByTime);
+  const taskPost = sortedTasks.map((task) => {
+    return {
+      amountOfWater: task.waterAmount,
+      date: formatSelectedDate(task.selectedDate),
+      hour: formatSelectedHour(task.selectedHour),
+    };
+  });
   const extractedData =
     weatherData &&
     weatherData.list &&
@@ -90,12 +184,121 @@ const HomeScreen = () => {
     });
 
   const navigation = useNavigation();
+  const handleNotify = () => {
+    navigation.navigate("Notify");
+  };
 
   const handleAutomatic = () => {
     navigation.navigate("AutomaticView2");
   };
   const handleManual = () => {
     navigation.navigate("ManualList2");
+  };
+
+  const updateSetPump = async (value) => {
+    const url =
+      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
+    const headers = {
+      "X-Authorization":
+        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+      "Content-Type": "application/json",
+    };
+    const data = { ...value };
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        console.log(`SetPump updated to ${value}`);
+      } else {
+        console.error("Failed to update SetPump1");
+      }
+    } catch (error) {
+      console.error(`Failed to update SetPump: ${error}`);
+    }
+  };
+
+  const handleTogglePump = () => {
+    const newPumpValue = setPump === 0 ? 1 : 0;
+    const newModeValue = 1;
+    updateSetPump({
+      Mode: newModeValue,
+      setPump: newPumpValue,
+    });
+
+    setSetPump(newPumpValue);
+    setButtonPump(newPumpValue === 1 ? "Tắt máy bơm" : "Bật máy bơm");
+  };
+
+  const updateSetPump1 = async (value) => {
+    const url =
+      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
+    const headers = {
+      "X-Authorization":
+        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+      "Content-Type": "application/json",
+    };
+    const data = { ...value };
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        console.log(`SetPump1 updated to ${value}`);
+      } else {
+        console.error("Failed to update SetPump1");
+      }
+    } catch (error) {
+      console.error(`Failed to update SetPump: ${error}`);
+    }
+  };
+
+  const handleTogglePump1 = () => {
+    const newPumpValue = setPump1 === 0 ? 1 : 0;
+    const newModeValue = 3;
+    updateSetPump1({
+      Mode: newModeValue,
+    });
+
+    setSetPump1(newPumpValue);
+    setButtonText(newPumpValue === 1 ? "Dừng" : "Tưới 1");
+  };
+
+  const updateSetPump2 = async (value) => {
+    const url =
+      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
+    const headers = {
+      "X-Authorization":
+        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+      "Content-Type": "application/json",
+    };
+    const data = { ...value };
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        console.log(`SetPump2 updated to ${value}`);
+      } else {
+        console.error("Failed to update SetPump2");
+      }
+    } catch (error) {
+      console.error(`Failed to update SetPump2: ${error}`);
+    }
+  };
+
+  const handleTogglePump2 = () => {
+    const newPumpValue = setPump2 === 0 ? 1 : 0;
+    const newModeValue = 2;
+    updateSetPump2({ Mode: newModeValue, Tasks: taskPost });
+    setSetPump2(newPumpValue);
+    setButtonText2(newPumpValue === 1 ? "Dừng" : "Tưới 2");
   };
 
   return (
@@ -106,12 +309,13 @@ const HomeScreen = () => {
           <Text style={styles.userInfoText}>
             Chúc một ngày mới tốt lành, IceTea
           </Text>
-          <Image
-            source={{
-              uri: "https://scontent.fhan14-3.fna.fbcdn.net/v/t39.30808-6/301632140_1448536232323376_1500603615049683013_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=YEQXkLuAfogAX8O5ilP&_nc_ht=scontent.fhan14-3.fna&oh=00_AfAWqSMXEFhp9JCszBcRnx3MES0NQDbNMM6OXJbZNTx_8w&oe=641F3B25",
-            }}
-            style={styles.userAvatar}
-          />
+          <TouchableOpacity onPress={handleNotify}>
+            <Ionicons
+              name="notifications-circle-outline"
+              size={40}
+              color="white"
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -121,22 +325,20 @@ const HomeScreen = () => {
             <View style={styles.left}>
               <View style={styles.location}>
                 <AntDesign name="enviroment" size={30} color="black" />
-                <Text style={styles.locationText}>{weatherData.city.name}</Text>
+                <Text style={styles.locationText}>Ho Chi Minh City</Text>
               </View>
-              <Text style={styles.temp}>{weatherData.list[0].main.temp}°C</Text>
-              <Text style={styles.label}>
-                Cảm giác như: {weatherData.list[0].main.feels_like}
-              </Text>
+              <Text style={styles.temp}>{temperature}°C</Text>
+              <Text style={styles.label}>Humidity: {humidity}</Text>
             </View>
 
             <Image
               style={styles.image1}
               source={
-                weatherData.list[0].main.temp > 33
+                temperature > 33
                   ? sun
-                  : weatherData.list[0].main.temp > 28
+                  : temperature > 28
                   ? sunrain
-                  : weatherData.list[0].main.temp > 25
+                  : temperature > 25
                   ? cloud
                   : rain
               }
@@ -149,15 +351,11 @@ const HomeScreen = () => {
                 size={24}
                 color="black"
               />
-              <Text style={styles.label}>
-                {weatherData.list[0].main.humidity}%
-              </Text>
+              <Text style={styles.label}>{soilmoisture}</Text>
             </View>
             <View style={styles.flexRow1}>
               <Entypo name="light-up" size={24} color="black" />
-              <Text style={styles.label}>
-                {weatherData.list[0].main.humidity}%
-              </Text>
+              <Text style={styles.label}>{light}</Text>
             </View>
           </View>
         </View>
@@ -183,14 +381,31 @@ const HomeScreen = () => {
         </ScrollView>
       </View>
 
+      <View>
+        <TouchableOpacity
+          style={[
+            styles.autoButton,
+            {
+              backgroundColor: buttonPump === "Bật máy bơm" ? "grey" : "red",
+            },
+          ]}
+          onPress={handleTogglePump}
+        >
+          <Text style={styles.autoWateringButtonText}>{buttonPump}</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.autoWateringContainer}>
         <View style={[styles.autoWatering, styles.autoWatering1]}>
           <Text style={styles.textWatering}>
             <Text style={styles.autoWateringTitle}>Tưới tự động</Text>
           </Text>
           <View style={styles.wateringSetting}>
-            <TouchableOpacity style={styles.autoWateringButton}>
-              <Text style={styles.autoWateringButtonText}>Tưới</Text>
+            <TouchableOpacity
+              style={styles.autoWateringButton}
+              onPress={handleTogglePump1}
+            >
+              <Text style={styles.autoWateringButtonText}>{buttonText}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleAutomatic}>
               <Image
@@ -208,8 +423,11 @@ const HomeScreen = () => {
             <Text style={styles.autoWateringTitle}>Tưới thủ công</Text>
           </Text>
           <View style={styles.wateringSetting}>
-            <TouchableOpacity style={styles.autoWateringButton}>
-              <Text style={styles.autoWateringButtonText}>Tưới</Text>
+            <TouchableOpacity
+              style={styles.autoWateringButton}
+              onPress={handleTogglePump2}
+            >
+              <Text style={styles.autoWateringButtonText}>{buttonText2}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleManual}>
               <Image
@@ -376,6 +594,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#48319D",
     opacity: 0.8,
     borderRadius: 10,
+  },
+  autoButton: {
+    marginTop: 10,
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: "grey",
+    opacity: 0.8,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "50%",
   },
   autoWateringButtonText: {
     color: "#FFF",

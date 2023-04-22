@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "../../api/client";
+import { CommonActions } from "@react-navigation/native";
 
 import {
   View,
@@ -50,6 +51,22 @@ export default function WateringForm() {
       if (response.status === 200) {
         // Gửi dữ liệu thành công, chuyển sang trang "ManualList"
         navigation.navigate("ManualList1");
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: "HomeView1",
+              },
+              {
+                name: "ManualList1",
+                options: {
+                  title: "Manual List",
+                },
+              },
+            ],
+          })
+        );
       } else {
         // Xử lý khi gửi dữ liệu không thành công
         // Ví dụ: Hiển thị thông báo lỗi
