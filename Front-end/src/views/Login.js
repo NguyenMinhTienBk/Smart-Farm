@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   View,
@@ -49,6 +50,11 @@ const LoginScreen = () => {
     setEmail("");
     setPassword("");
     navigation.navigate("Option");
+    try {
+      await AsyncStorage.setItem("email", email);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -88,10 +94,10 @@ const LoginScreen = () => {
       <View style={styles.form}>
         <Text style={styles.bigTitle}>Chào mừng</Text>
         <Text style={styles.formTitle}>Đăng nhập tài khoản của bạn</Text>
-        <Text style={styles.label}>Email:</Text>
+        <Text style={styles.label}>SĐT:</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nhập email"
+          placeholder="Nhập SĐT"
           value={email}
           onChangeText={setEmail}
         />

@@ -5,11 +5,15 @@ import Login from "./src/views/Login";
 import Option from "./src/views/Option";
 import Register from "./src/views/Register";
 import CheckVermin from "./src/views/CheckVermin";
+import Notify from "./src/views/Notify";
+import Tree from "./src/views/Tree";
+import TreeList from "./src/views/TreeList";
 
 import HomeView1 from "./src/views/views1/Home";
 import SettingView1 from "./src/views/views1/Setting";
 import AutomaticView1 from "./src/views/views1/Automatic";
 import ManualView1 from "./src/views/views1/Manual";
+import ManualList1 from "./src/views/views1/ManualList";
 import Price from "./src/views/views1/Prices";
 import News from "./src/views/views1/News";
 import Chart from "./src/views/views2/Chart";
@@ -17,6 +21,7 @@ import HomeView2 from "./src/views/views2/Home";
 import SettingView2 from "./src/views/views2/Setting";
 import AutomaticView2 from "./src/views/views2/Automatic";
 import ManualView2 from "./src/views/views2/Manual";
+import ManualList2 from "./src/views/views2/ManualList";
 import ViewDeviceList from "./src/views/views2/ViewDeviceList";
 import DHT20 from "./src/views/views2/Device/DHT20";
 import YoloBit from "./src/views/views2/Device/YoloBit";
@@ -65,6 +70,7 @@ const App = () => {
           component={SettingView2}
           options={{ title: "Cài đặt" }}
         />
+
         <Stack.Screen
           name="ViewDeviceList"
           component={ViewDeviceList}
@@ -84,13 +90,23 @@ const App = () => {
         <Stack.Screen
           name="AutomaticView2"
           component={AutomaticView2}
-          options={{ title: "Thiết lập tưới tự động" }}
+          options={{ title: "Thiết lập task" }}
         />
 
         <Stack.Screen
           name="ManualView2"
           component={ManualView2}
-          options={{ title: "Thiết lập tưới thủ công" }}
+          options={{ title: "Thiết lập task " }}
+        />
+        <Stack.Screen
+          name="ManualList1"
+          component={ManualList1}
+          options={{ title: "Danh sách lịch tưới thủ công" }}
+        />
+        <Stack.Screen
+          name="ManualList2"
+          component={ManualList2}
+          options={{ title: "Danh sách lịch tưới thủ công" }}
         />
         <Stack.Screen
           name="Chart"
@@ -136,6 +152,21 @@ const App = () => {
           name="Light"
           component={Light}
           options={{ title: "Cảm biến ánh sáng" }}
+        />
+        <Stack.Screen
+          name="Notify"
+          component={Notify}
+          options={{ title: "Thông báo" }}
+        />
+        <Stack.Screen
+          name="Tree"
+          component={Tree}
+          options={{ title: "Thêm cây trồng" }}
+        />
+        <Stack.Screen
+          name="TreeList"
+          component={TreeList}
+          options={{ title: "Danh sách cây trồng" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

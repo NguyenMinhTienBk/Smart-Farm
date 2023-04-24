@@ -23,6 +23,7 @@
     "expo-image-manipulator": "^11.1.1",
     "expo-image-picker": "^14.1.1",
     "expo-status-bar": "~1.4.4",
+    "luxon": "^3.3.0",
     "react": "^18.2.0",
     "react-devtools": "^4.27.4",
     "react-native": "0.71.6",
@@ -41,7 +42,9 @@
     "react-native-screens": "^3.20.0",
     "react-native-sensors": "^7.3.6",
     "react-native-svg": "13.4.0",
-    "react-navigation": "^4.4.4"
+    "react-navigation": "^4.4.4",
+    "react-redux": "^8.0.5",
+    "redux": "^4.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
