@@ -3,12 +3,15 @@ import { Text, View, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastAndroid } from "react-native";
 import client from "../../api/client";
+import { CommonActions } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Automatic() {
   const [selectedPlant, setSelectedPlant] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [email, setEmail] = useState("");
   const [tasks, setTasks] = useState([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
     retrieveEmail();
@@ -55,15 +58,14 @@ export default function Automatic() {
       console.log(error);
     }
   };
-
   const formatSelectedDate = (date) => {
     const d = new Date(date);
     const day = d.getDate();
     const month = d.getMonth() + 1;
     const year = d.getFullYear();
-    return `${day < 10 ? "0" + day : day}:${
+    return `${day < 10 ? "0" + day : day}-${
       month < 10 ? "0" + month : month
-    }:${year}`;
+    }-${year}`;
   };
 
   const handlePlantSelection = (value) => {
@@ -86,21 +88,6 @@ export default function Automatic() {
           selectedPlant: selectedPlant,
           selectedDate: selectedDate,
         });
-        await fetch(
-          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE",
-          {
-            method: "POST",
-            headers: {
-              "X-Authorization":
-                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              selectedPlant: selectedPlant,
-              selectedDate: selectedDate,
-            }),
-          }
-        );
         ToastAndroid.show("Cập nhật thành công!", ToastAndroid.SHORT);
       } else {
         // Nếu chưa tồn tại dữ liệu, thực hiện gọi API create
@@ -109,21 +96,6 @@ export default function Automatic() {
           selectedDate: selectedDate,
           email: email,
         });
-        await fetch(
-          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE",
-          {
-            method: "POST",
-            headers: {
-              "X-Authorization":
-                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              selectedPlant: selectedPlant,
-              selectedDate: selectedDate,
-            }),
-          }
-        );
         ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
       }
     } catch (error) {
@@ -134,26 +106,23 @@ export default function Automatic() {
           selectedDate: selectedDate,
           email: email,
         });
-        await fetch(
-          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE",
-          {
-            method: "POST",
-            headers: {
-              "X-Authorization":
-                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              selectedPlant: selectedPlant,
-              selectedDate: selectedDate,
-            }),
-          }
-        );
         ToastAndroid.show("Lưu thay đổi thành công!", ToastAndroid.SHORT);
       } else {
         console.log(error);
       }
     }
+    await AsyncStorage.setItem("tree", selectedPlant);
+    await AsyncStorage.setItem("date", selectedDate);
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [
+          {
+            name: "HomeView2",
+          },
+        ],
+      })
+    );
   };
 
   return (
