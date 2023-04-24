@@ -8,6 +8,7 @@ import CheckVermin from "./src/views/CheckVermin";
 import Notify from "./src/views/Notify";
 import Tree from "./src/views/Tree";
 import TreeList from "./src/views/TreeList";
+import EditUser from "./src/views/EditUser";
 
 import HomeView1 from "./src/views/views1/Home";
 import SettingView1 from "./src/views/views1/Setting";
@@ -167,6 +168,11 @@ const App = () => {
           name="TreeList"
           component={TreeList}
           options={{ title: "Danh sách cây trồng" }}
+        />
+        <Stack.Screen
+          name="EditUser"
+          component={EditUser}
+          options={{ title: "Thông tin cá nhân" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

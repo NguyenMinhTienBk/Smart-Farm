@@ -17,6 +17,9 @@ const Setting = () => {
   const handleViewDeviceList = () => {
     navigation.navigate("ViewDeviceList");
   };
+  const handleEditUser = () => {
+    navigation.navigate("EditUser");
+  };
   const handleCheckVermin = () => {
     navigation.navigate("CheckVermin");
   };
@@ -44,8 +47,8 @@ const Setting = () => {
 
       <View style={styles.content}>
         <Text style={styles.redText}>Cài đặt</Text>
-        <TouchableOpacity style={styles.rowContainer}>
-          <Text style={styles.text}>Chỉnh sửa thông tin cá nhân</Text>
+        <TouchableOpacity style={styles.rowContainer} onPress={handleEditUser}>
+          <Text style={styles.text}>Xem thông tin cá nhân</Text>
           <Icon name="keyboard-arrow-right" size={20} style={styles.icon} />
         </TouchableOpacity>
         <TouchableOpacity
