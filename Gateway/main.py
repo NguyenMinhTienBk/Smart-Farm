@@ -12,21 +12,22 @@ from Date import *
 
 # for timezone()
 import pytz
- 
+
 # using now() to get current time
 date_format = '%d-%m-%Y'
 hour_format = '%H:%M'
 current_time = datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 curTime = time.time()
+last_update = ''
 
-
-
+# AI model
+model = IrrigationModel()
 
 # cur_date = current_time.strftime(date_format)
 # cur_hour = current_time.strftime(hour_format)
 
 # printing current time in india
-#format: 2023-04-22 12:23:59.455187+07:00
+# format: 2023-04-22 12:23:59.455187+07:00
 # print("The current time is :", cur_date)
 # print("The current hour is :", cur_hour)
 # print(days_between_dates("10-04-2023",cur_date))
@@ -39,7 +40,7 @@ IRRIGATION_MANUAL = 1
 IRRIGATION_CALENDAR = 2
 
 amountOfWater = float(0)
-fLowPump = 1.4 #L/m
+fLowPump = 1.4  # L/m
 onTime = float(0)
 offTime = float(0)
 pumping = False
@@ -57,17 +58,15 @@ humi_cur = 80
 light_cur = 100
 soil_cur = 40
 
-# task = [  
+# task = [
 #             {"amountOfWater" : "", "date" : "",  "hour" : ""},
 #             {"amountOfWater" :"",  "date":"","hour":""}
 #         ]
 
-taskList = [  
-            {"amountOfWater" : "1000", "date" : "21-04-2023",  "hour" : "15:30"},
-            {"amountOfWater" :"1200",  "date":"23-04-2023","hour":"11:45"}
-        ]
-
-
+taskList = [
+    {"amountOfWater": "1000", "date": "21-04-2023",  "hour": "15:30"},
+    {"amountOfWater": "1200",  "date": "23-04-2023", "hour": "11:45"}
+]
 
 
 print("Xin chào ThingsBoard")
@@ -90,7 +89,8 @@ def recv_message(client, userdata, message):
         jsonobj = json.loads(message.payload)
         if jsonobj['method'] == "setPump":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes/SHARED_SCOPE', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes/SHARED_SCOPE',
+                           json.dumps(temp_data), 1)
             global setPump
             setPump = jsonobj['params']
             # if jsonobj['params']:
@@ -98,14 +98,15 @@ def recv_message(client, userdata, message):
             #     ser.write("A".encode())
             # else:
             #     ser.write("a".encode())
-                # print("a")
+            # print("a")
         if jsonobj['method'] == "Mode":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             global Mode
             Mode = int(jsonobj['params'])
             # if jsonobj['params'] == 1:
-            #     
+            #
             #     Mode = IRRIGATION_AUTO
             #     # ser.write("A".encode())
             # elif jsonobj['params'] == 2:
@@ -119,34 +120,40 @@ def recv_message(client, userdata, message):
             controller()
         if jsonobj['method'] == "amountOfWater":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             global amountOfWater
             amountOfWater = jsonobj['params']
             print(type(amountOfWater))
         if jsonobj['method'] == "irrigation_schedule":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             # json
         if jsonobj['method'] == "selectedPlant":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             global selectedPlant
             selectedPlant = jsonobj['params']
             # global amountOfWater
             # amountOfWater = jsonobj['params']
         if jsonobj['method'] == "selectedDate":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             global selectedDate
             selectedDate = jsonobj['params']
         if jsonobj['method'] == "numOfDayPlanted":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             global numOfDayPlanted
             numOfDayPlanted = jsonobj['params']
         if jsonobj['method'] == "task":
             temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
+            client.publish('v1/devices/me/attributes',
+                           json.dumps(temp_data), 1)
             global taskList
             taskList = jsonobj['params']
             print(type(taskList))
@@ -155,8 +162,6 @@ def recv_message(client, userdata, message):
 
     except:
         pass
-
-
 
 
 def connected(client, usedata, flags, rc):
@@ -168,6 +173,8 @@ def connected(client, usedata, flags, rc):
         print("Connection is failed")
 
 #  find port com connect with mircrobit
+
+
 def getPort():
     ports = serial.tools.list_ports.comports()
     N = len(ports)
@@ -183,6 +190,7 @@ def getPort():
     return commPort
 
 # global isMicrobitConected
+
 
 def processData(data):
     data = data.replace("!", "")
@@ -225,10 +233,12 @@ def processData(data):
         print(collect_data)
         client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
 
-    except: # if given data error
+    except:  # if given data error
         pass
 
+
 mess = ""
+
 
 def readSerial():
     global ser
@@ -248,8 +258,6 @@ def readSerial():
                 mess = mess[end+1:]
 
 
-
-
 client = mqtt.Client("Gateway_Thingsboard")
 client.username_pw_set(THINGS_BOARD_ACCESS_TOKEN)
 
@@ -259,13 +267,6 @@ client.loop_start()
 
 client.on_subscribe = subscribed
 client.on_message = recv_message
-
-
-
-
-
-
-
 
 
 def Plantype():
@@ -290,13 +291,13 @@ def Plantype():
     return plantType
 
 
-
 def controller():
     global pumping
     global wateringTime
-    global onTime   
+    global onTime
     global Mode
     global flagWateringTime
+    global model
     # global cur_date
     # global cur_hour
     # print(type(Mode))
@@ -304,14 +305,15 @@ def controller():
     # print(Mode == IRRIGATION_AUTO, Mode == IRRIGATION_CALENDAR, Mode == IRRIGATION_MANUAL)
     # global taskList
 
-    if Mode == IRRIGATION_AUTO: # Assign to AI Model
-   
+    if Mode == IRRIGATION_AUTO:  # Assign to AI Model
+
         # CropType, cropDays, soilMoisture, temp, humidity
         print('In IRRIGATION_AUTO')
-        print('Type Plant:',selectedPlant)
-        print('Number of days planted: ',days_between_dates(selectedDate,cur_date), )
-        data = [Plantype(),days_between_dates(selectedDate,cur_date) , soil_cur, temp_cur, humi_cur]  
-        model = IrrigationModel()
+        print('Type Plant:', selectedPlant)
+        print('Number of days planted: ',
+              days_between_dates(selectedDate, cur_date), )
+        data = [Plantype(), days_between_dates(selectedDate, cur_date),
+                soil_cur, temp_cur, humi_cur]
         pumping = model.doIrrigate(data)
 
     elif Mode == IRRIGATION_CALENDAR:
@@ -319,7 +321,7 @@ def controller():
         # wateringTime = (amountOfWater/ fLowPump) * 60 # seconds
         # pumping = True
         # ser.write("A".encode()) #Turn on pump
-        # global onTime   
+        # global onTime
         # onTime = curTime
         print('In IRRIGATION_CALENDAR')
         for x in taskList:
@@ -327,22 +329,21 @@ def controller():
             # print(cur_date)
             # print(cur_hour)
             print(flagWateringTime)
-            if checkEqualTime(cur_date,cur_hour,x['date'], x['hour']) and flagWateringTime == False:
-                print('Tuoi lich', x['hour'],x['date'] )
-                wateringTime = (float(x['amountOfWater'])/ fLowPump) * 60 # seconds
+            if checkEqualTime(cur_date, cur_hour, x['date'], x['hour']) and flagWateringTime == False:
+                print('Tuoi lich', x['hour'], x['date'])
+                wateringTime = (
+                    float(x['amountOfWater']) / fLowPump) * 60  # seconds
                 # print(wateringTime)
-                print('Watering Time: ',wateringTime,' seconds' )
+                print('Watering Time: ', wateringTime, ' seconds')
                 pumping = True
                 # ser.write("A".encode()) #Turn on pump
                 onTime = curTime
-                print('OnTime: ',onTime)
+                print('OnTime: ', onTime)
                 flagWateringTime = True
                 # print(flagWateringTime)
-    else: #IRRIGATION_MANUAL
+    else:  # IRRIGATION_MANUAL
         print('In IRRIGATION_MANUAL')
         pumping = setPump
-
-
 
 
 def check_wateringTime():
@@ -352,9 +353,9 @@ def check_wateringTime():
     global flagWateringTime
 
     # global wateringTime
-    print('Current Time in check Watering: ',curTime)
-    print('On Time in check Watering: ',onTime)
-    print('wateringTime in check Watering: ',wateringTime)
+    print('Current Time in check Watering: ', curTime)
+    print('On Time in check Watering: ', onTime)
+    print('wateringTime in check Watering: ', wateringTime)
 
     # print('wateringTime in check Watering: ', )
     if curTime - onTime > wateringTime:
@@ -363,70 +364,89 @@ def check_wateringTime():
         offTime = curTime
         flagWateringTime = False
 
+
 isMicrobitConected = False
 
 # count = 0
 
 
+def retrainModel(curTime):
+    global model
+    global last_update
 
-while True:
-    # global ser
-    # global cur_date
-    # global cur_hour
-    # if (count > 5):
-    #     temp = round(random.uniform(20.0, 50.0),2)
-    #     humi = round(random.uniform(70.0, 85.0),2)
-    #     light_intesity = round(random.uniform(100.0, 300.0),0)
-    #     soil_moisture = round(random.uniform(10.0, 45.0),2)
-    #     count = 0
-    #     collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
-    #     client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
-        
+    tdelta = curTime - last_update
+    if(tdelta.total_seconds > 14*24*60*60):
+        last_update = curTime
 
-    # print(isMicrobitConected)
-    # print("while")
-    # global curTime
-    curTime = time.time()
-    # print('Current Time in While', )
+        retrain_model = model.loadModel('irrigationModel.joblib')
+        # 3 last months
+        for i in [1, 2, 3]:
+            accurary = model.retrainModel(
+                retrain_model, f"AI/Dataset/retrain_{i}.csv")
+            print(accurary)
 
-    if isMicrobitConected:
-        # print("reading serial")
-        # check_wateringTime()
-        readSerial()
-    else:
-        if getPort() != "None":
+        model.saveRetrainModel()
+
+
+def main():
+    global model
+    while True:
+        # global ser
+        # global cur_date
+        # global cur_hour
+        # if (count > 5):
+        #     temp = round(random.uniform(20.0, 50.0),2)
+        #     humi = round(random.uniform(70.0, 85.0),2)
+        #     light_intesity = round(random.uniform(100.0, 300.0),0)
+        #     soil_moisture = round(random.uniform(10.0, 45.0),2)
+        #     count = 0
+        #     collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
+        #     client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
+
+        # print(isMicrobitConected)
+        # print("while")
+        # global curTime
+        curTime = time.time()
+        retrainModel(curTime)
+
+        # print('Current Time in While', )
+
+        if isMicrobitConected:
+            # print("reading serial")
+            # check_wateringTime()
+            readSerial()
+        else:
+            if getPort() != "None":
                 global ser
                 ser = serial.Serial(port=getPort(), baudrate=115200)
                 isMicrobitConected = True
 
-    current_time = datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
+        current_time = datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
-    cur_date = current_time.strftime(date_format)
-    cur_hour = current_time.strftime(hour_format)
-    # print(type(cur_date))
-    # print(type(cur_hour))
-    # print(type(task[1]['date']))
-    # print(type(task[1]['hour']))
+        cur_date = current_time.strftime(date_format)
+        cur_hour = current_time.strftime(hour_format)
+        # print(type(cur_date))
+        # print(type(cur_hour))
+        # print(type(task[1]['date']))
+        # print(type(task[1]['hour']))
 
-    # if (cur_hour == task[1]['date']):
-    #     print('')
-    # print(checkEqualTime(cur_date, cur_hour, task[1]['date'],task[1]['hour']))
+        # if (cur_hour == task[1]['date']):
+        #     print('')
+        # print(checkEqualTime(cur_date, cur_hour, task[1]['date'],task[1]['hour']))
 
-    controller()
-    if flagWateringTime:
-        check_wateringTime()
-    
-    if (OldPumping!=pumping):
-        # global ser
-        if pumping: 
-            print('Turn on pump')
-            # ser.write("A".encode()) #Turn on pump
-        else:
-            print('Turn off pump')
-            # ser.write("a".encode()) #Turn off pump
-        OldPumping = pumping
-    
-    # count +=1
-    time.sleep(1)
+        controller()
+        if flagWateringTime:
+            check_wateringTime()
 
+        if (OldPumping != pumping):
+            # global ser
+            if pumping:
+                print('Turn on pump')
+                # ser.write("A".encode()) #Turn on pump
+            else:
+                print('Turn off pump')
+                # ser.write("a".encode()) #Turn off pump
+            OldPumping = pumping
 
+        # count +=1
+        time.sleep(1)
