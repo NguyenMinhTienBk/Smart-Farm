@@ -38,9 +38,7 @@ IRRIGATION_AUTO = 3
 IRRIGATION_MANUAL = 1
 IRRIGATION_CALENDAR = 2
 
-# int Mode
 amountOfWater = float(0)
-# Mode = IRRIGATION_MANUAL
 fLowPump = 1.4 #L/m
 onTime = float(0)
 offTime = float(0)
@@ -54,6 +52,10 @@ Mode = IRRIGATION_MANUAL
 setPump = False
 plantType = 6
 selectedDate = "01-01-2023"
+temp_cur = 25
+humi_cur = 80
+light_cur = 100
+soil_cur = 40
 
 # task = [  
 #             {"amountOfWater" : "", "date" : "",  "hour" : ""},
@@ -82,24 +84,26 @@ def subscribed(client, userdata, mid, granted_qos):
 def recv_message(client, userdata, message):
     print("Received: ", message.payload.decode("utf-8"))
     temp_data = {'value': True}
+
     try:
+        # print('sfsdf', Mode)
         jsonobj = json.loads(message.payload)
         if jsonobj['method'] == "setPump":
             temp_data['value'] = jsonobj['params']
             client.publish('v1/devices/me/attributes/SHARED_SCOPE', json.dumps(temp_data), 1)
             global setPump
             setPump = jsonobj['params']
-            if jsonobj['params']:
-                # print("A")
-                ser.write("A".encode())
-            else:
-                ser.write("a".encode())
+            # if jsonobj['params']:
+            #     # print("A")
+            #     ser.write("A".encode())
+            # else:
+            #     ser.write("a".encode())
                 # print("a")
         if jsonobj['method'] == "Mode":
             temp_data['value'] = jsonobj['params']
             client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
             global Mode
-            Mode = jsonobj['params']
+            Mode = int(jsonobj['params'])
             # if jsonobj['params'] == 1:
             #     
             #     Mode = IRRIGATION_AUTO
@@ -118,6 +122,7 @@ def recv_message(client, userdata, message):
             client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
             global amountOfWater
             amountOfWater = jsonobj['params']
+            print(type(amountOfWater))
         if jsonobj['method'] == "irrigation_schedule":
             temp_data['value'] = jsonobj['params']
             client.publish('v1/devices/me/attributes', json.dumps(temp_data), 1)
@@ -191,16 +196,25 @@ def processData(data):
                 # temp = splitData[2]
                 # print(temp)
                 collect_data = {'temperature': splitData[2]}
+                global temp_cur
+                temp_cur = splitData[2]
             elif splitData[1] == "HUMI":
                 # client.publish("bbc-humi", splitData[2])
                 # humi = splitData[2]
                 collect_data = {'humidity': splitData[2]}
+                global humi_cur
+                humi_cur = splitData[2]
+
             elif splitData[1] == "SOIL":
                 # soil_moisture = splitData[2]
                 collect_data = {'soilmoisture': splitData[2]}
+                global soil_cur
+                soil_cur = splitData[2]
             elif splitData[1] == "LIGHT":
                 # light_intesity = splitData[2]
                 collect_data = {'light': splitData[2]}
+                global light_cur
+                light_cur = splitData[2]
         # elif splitData[0] == "2":
         #     if splitData[1] == "TEMP":
         #         client.publish("bbc-temp-2", splitData[2])
@@ -285,7 +299,9 @@ def controller():
     global flagWateringTime
     # global cur_date
     # global cur_hour
-
+    # print(type(Mode))
+    # print(IRRIGATION_AUTO, IRRIGATION_CALENDAR, IRRIGATION_MANUAL)
+    # print(Mode == IRRIGATION_AUTO, Mode == IRRIGATION_CALENDAR, Mode == IRRIGATION_MANUAL)
     # global taskList
 
     if Mode == IRRIGATION_AUTO: # Assign to AI Model
@@ -294,7 +310,7 @@ def controller():
         print('In IRRIGATION_AUTO')
         print('Type Plant:',selectedPlant)
         print('Number of days planted: ',days_between_dates(selectedDate,cur_date), )
-        data = [Plantype(),days_between_dates(selectedDate,cur_date) , 700, 32, 32]  
+        data = [Plantype(),days_between_dates(selectedDate,cur_date) , soil_cur, temp_cur, humi_cur]  
         model = IrrigationModel()
         pumping = model.doIrrigate(data)
 
@@ -310,15 +326,16 @@ def controller():
             # print(x)
             # print(cur_date)
             # print(cur_hour)
-            # print(flagWateringTime)
+            print(flagWateringTime)
             if checkEqualTime(cur_date,cur_hour,x['date'], x['hour']) and flagWateringTime == False:
                 print('Tuoi lich', x['hour'],x['date'] )
                 wateringTime = (float(x['amountOfWater'])/ fLowPump) * 60 # seconds
+                # print(wateringTime)
                 print('Watering Time: ',wateringTime,' seconds' )
                 pumping = True
                 # ser.write("A".encode()) #Turn on pump
                 onTime = curTime
-                print(onTime)
+                print('OnTime: ',onTime)
                 flagWateringTime = True
                 # print(flagWateringTime)
     else: #IRRIGATION_MANUAL
@@ -332,34 +349,38 @@ def check_wateringTime():
     # global ser
     global pumping
     global offTime
+    global flagWateringTime
+
     # global wateringTime
     print('Current Time in check Watering: ',curTime)
+    print('On Time in check Watering: ',onTime)
+    print('wateringTime in check Watering: ',wateringTime)
+
     # print('wateringTime in check Watering: ', )
-    if pumping:
-        return
-    elif curTime - onTime > wateringTime:
+    if curTime - onTime > wateringTime:
         pumping = False
         # ser.write("a".encode()) #Turn off pump
         offTime = curTime
+        flagWateringTime = False
 
 isMicrobitConected = False
 
-count = 0
+# count = 0
 
 
 
 while True:
-    global ser
+    # global ser
     # global cur_date
     # global cur_hour
-    if (count > 5):
-        temp = round(random.uniform(20.0, 50.0),2)
-        humi = round(random.uniform(70.0, 85.0),2)
-        light_intesity = round(random.uniform(100.0, 300.0),0)
-        soil_moisture = round(random.uniform(10.0, 45.0),2)
-        count = 0
-        collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
-        client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
+    # if (count > 5):
+    #     temp = round(random.uniform(20.0, 50.0),2)
+    #     humi = round(random.uniform(70.0, 85.0),2)
+    #     light_intesity = round(random.uniform(100.0, 300.0),0)
+    #     soil_moisture = round(random.uniform(10.0, 45.0),2)
+    #     count = 0
+    #     collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
+    #     client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
         
 
     # print(isMicrobitConected)
@@ -374,6 +395,7 @@ while True:
         readSerial()
     else:
         if getPort() != "None":
+                global ser
                 ser = serial.Serial(port=getPort(), baudrate=115200)
                 isMicrobitConected = True
 
@@ -395,6 +417,7 @@ while True:
         check_wateringTime()
     
     if (OldPumping!=pumping):
+        # global ser
         if pumping: 
             print('Turn on pump')
             # ser.write("A".encode()) #Turn on pump
@@ -403,7 +426,7 @@ while True:
             # ser.write("a".encode()) #Turn off pump
         OldPumping = pumping
     
-    count +=1
+    # count +=1
     time.sleep(1)
 
 
