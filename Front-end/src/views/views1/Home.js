@@ -371,7 +371,7 @@ const HomeScreen = () => {
                 <Text style={styles.locationText}>Ho Chi Minh City</Text>
               </View>
               <Text style={styles.temp}>{temperature}°C</Text>
-              <Text style={styles.label}>Humidity: {humidity}</Text>
+              <Text style={styles.label}>Humidity: {soilmoisture}</Text>
             </View>
 
             <Image
@@ -394,7 +394,7 @@ const HomeScreen = () => {
                 size={24}
                 color="black"
               />
-              <Text style={styles.label}>{soilmoisture}</Text>
+              <Text style={styles.label}>{humidity}</Text>
             </View>
             <View style={styles.flexRow1}>
               <Entypo name="light-up" size={24} color="black" />
@@ -476,7 +476,7 @@ const HomeScreen = () => {
 
         <View style={[styles.autoWatering, styles.autoWatering2]}>
           <Text style={styles.textWatering}>
-            <Text style={styles.autoWateringTitle}>Tưới thủ công</Text>
+            <Text style={styles.autoWateringTitle}>Tưới theo lịch</Text>
           </Text>
           <View style={styles.wateringSetting}>
             <TouchableOpacity

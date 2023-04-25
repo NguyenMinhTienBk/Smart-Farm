@@ -35,21 +35,21 @@ const Notify = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View>
       {/* Kiểm tra cả 2 điều kiện */}
       {temperature && humidity && (
-        <View>
+        <View style={styles.container}>
+          <Text style={styles.timeText}>
+            {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
+          </Text>
+
           {temperature > 35 && (
-            <Text style={styles.text}>
-              Nhiệt độ hiện tại cao hơn 35 độ vào lúc{" "}
-              {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
+            <Text style={styles.contentText}>
+              Nhiệt độ hiện tại cao hơn 35 độ{" "}
             </Text>
           )}
           {humidity < 50 && (
-            <Text style={styles.text}>
-              Độ ẩm hiện tại thấp hơn 50% vào lúc{" "}
-              {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
-            </Text>
+            <Text style={styles.contentText}>Độ ẩm hiện tại thấp hơn 50% </Text>
           )}
         </View>
       )}
@@ -59,11 +59,19 @@ const Notify = () => {
 
 const styles = StyleSheet.create({
   container: {
-    margin: 10,
+    padding: 16,
+    backgroundColor: "#f8f8f8",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
   },
-  text: {
+  timeText: {
+    fontSize: 14,
+    color: "#666",
+  },
+  contentText: {
+    fontSize: 16,
     color: "red",
-    marginVertical: 5,
+    marginTop: 8,
   },
 });
 
