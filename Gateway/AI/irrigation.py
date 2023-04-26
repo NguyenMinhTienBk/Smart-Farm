@@ -22,8 +22,10 @@ class Plant(Enum):
 
 class IrrigationModel:
     def __init__(self) -> None:
-        self.model = self.loadModel('irrigationModel.joblib')
-        self.scaler = joblib.load('std_scaler.bin')
+        self.scaler = joblib.load(
+            'D:/OneDrive - m4n7/BK/HK222/DADN CNPM/Smart-Farm-Git/Gateway/std_scaler.bin')
+        self.model = joblib.load(
+            'D:/OneDrive - m4n7/BK/HK222/DADN CNPM/Smart-Farm-Git/Gateway/irrigationModel.joblib')
         self.onTime = None
         self.offTime = None
         self.maxPumpTime = 30*60

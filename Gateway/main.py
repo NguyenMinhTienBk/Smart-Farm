@@ -187,6 +187,8 @@ def getPort():
         if "USB-SERIAL CH340" in strPort:
             splitPort = strPort.split(" ")
             commPort = (splitPort[0])
+            commPort = "COM5"
+
 
     print(commPort)
     return commPort
@@ -510,10 +512,10 @@ while True:
         # global ser
         if pumping:
             print('Turn on pump')
-            # ser.write("A".encode()) #Turn on pump
+            ser.write("A".encode()) #Turn on pump
         else:
             print('Turn off pump')
-            # ser.write("a".encode()) #Turn off pump
+            ser.write("a".encode()) #Turn off pump
         OldPumping = pumping
 
     # count +=1
