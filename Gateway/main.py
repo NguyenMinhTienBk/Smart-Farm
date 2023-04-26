@@ -1,4 +1,3 @@
-from irrigation import IrrigationModel, Plant
 
 import serial.tools.list_ports
 import paho.mqtt.client as mqtt
@@ -8,13 +7,16 @@ import datetime
 import random
 import csv
 import os
+import sys
+
+from irrigation import IrrigationModel, Plant
 
 
 from Date import *
 
 # for timezone()
 import pytz
-
+DIC_PATTH = 'D:/OneDrive - m4n7/BK/HK222/DADN CNPM/Smart-Farm-Git/Gateway'
 # using now() to get current time
 date_format = '%d-%m-%Y'
 hour_format = '%H:%M'
@@ -90,8 +92,10 @@ def recv_message(client, userdata, message):
         # print('sfsdf', Mode)
         jsonobj = json.loads(message.payload)
         if jsonobj['method'] == "setPump":
-            temp_data['value'] = jsonobj['params']
-            client.publish('v1/devices/me/attributes/SHARED_SCOPE',
+            # temp_data['value'] = jsonobj['params']
+            temp_data = {'setPump': jsonobj['params']}
+            print(json.dumps(temp_data))
+            client.publish('v1/devices/me/attributes',
                            json.dumps(temp_data), 1)
             global setPump
             setPump = jsonobj['params']
