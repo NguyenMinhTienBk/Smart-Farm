@@ -6,6 +6,8 @@ import time
 import json
 import datetime
 import random
+import csv
+import os
 
 
 from Date import *
@@ -246,7 +248,9 @@ def readSerial():
     if (bytesToRead > 0):
         global mess
         mess = mess + ser.read(bytesToRead).decode("UTF-8")
+        flag = False
         while ("#" in mess) and ("!" in mess):
+            flag
             start = mess.find("!")
             end = mess.find("#")
             # print("readSerial")
@@ -256,6 +260,8 @@ def readSerial():
                 mess = ""
             else:
                 mess = mess[end+1:]
+
+        saveSensorData()
 
 
 client = mqtt.Client("Gateway_Thingsboard")
@@ -298,7 +304,7 @@ def controller():
     global Mode
     global flagWateringTime
     global model
-    # global cur_date
+    global cur_date
     # global cur_hour
     # print(type(Mode))
     # print(IRRIGATION_AUTO, IRRIGATION_CALENDAR, IRRIGATION_MANUAL)
@@ -312,9 +318,17 @@ def controller():
         print('Type Plant:', selectedPlant)
         print('Number of days planted: ',
               days_between_dates(selectedDate, cur_date), )
-        data = [Plantype(), days_between_dates(selectedDate, cur_date),
-                soil_cur, temp_cur, humi_cur]
-        pumping = model.doIrrigate(data)
+
+        # ai prediction
+        if soil_cur is None or temp_cur is None or humi_cur is None:
+            soil_cur_2 = 1024 - soil_cur * 1024/100
+            data = [Plantype(), days_between_dates(selectedDate, cur_date),
+                    soil_cur_2, temp_cur, humi_cur]
+            pumping = model.doIrrigate(data)
+
+            soil_cur = None
+            temp_cur = None
+            humi_cur = None
 
     elif Mode == IRRIGATION_CALENDAR:
         # global wateringTime
@@ -370,83 +384,137 @@ isMicrobitConected = False
 # count = 0
 
 
+def evaluatePump(soil_cur):
+    global plantType
+    global selectedPlant
+    if (selectedPlant == "GROUND_NUTS"):
+        return soil_cur > 400
+    elif(selectedPlant == "WHEET"):
+        return soil_cur > 500
+    elif(selectedPlant == "GARDEN_FLOWERS"):
+        return soil_cur > 600
+    elif(selectedPlant == "MAIZE"):
+        return soil_cur > 400
+    elif(selectedPlant == "PADDY"):
+        return soil_cur > 500
+    elif(selectedPlant == "POTATO"):
+        return soil_cur > 600
+    elif(selectedPlant == "PULSE"):
+        return soil_cur > 400
+    elif(selectedPlant == "COFFEE"):
+        return soil_cur > 500
+
+
+def saveSensorData():
+    global soil_cur
+    global temp_cur
+    global humi_cur
+
+    cur_day = datetime.datetime.now()
+    month = cur_day.month
+    year = cur_day.year
+    soil_cur_2 = int(1024 - soil_cur * 1024/100)
+
+    with open(f"./AI/Dataset/RetrainData/data_{month}_{year}.csv", mode='w') as employee_file:
+        employee_writer = csv.writer(
+            employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        employee_writer.writerow([Plantype(), days_between_dates(selectedDate, cur_day),
+                                  soil_cur_2, temp_cur, humi_cur, evaluatePump(soil_cur_2)])
+
+
 def retrainModel(curTime):
     global model
     global last_update
 
-    tdelta = curTime - last_update
+    cur_day = datetime.datetime.now()
+    month = cur_day.month
+    year = cur_day.year
+    tdelta = cur_day - last_update
+    file_list = []
+
+    for i in range(3):
+        m = month - i
+        y = year
+        if m <= 0:
+            m = 12 + m
+            y = year - 1
+
+    name = f"data_{m}_{y}.csv"
+    print(os.getcwd() + '/' + name)
+    if os.path.exists(os.getcwd() + '/' + name):
+        file_list += [name]
+
     if(tdelta.total_seconds > 14*24*60*60):
         last_update = curTime
 
         retrain_model = model.loadModel('irrigationModel.joblib')
         # 3 last months
-        for i in [1, 2, 3]:
+        for path in file_list:
             accurary = model.retrainModel(
-                retrain_model, f"AI/Dataset/retrain_{i}.csv")
+                retrain_model, f"./AI/Dataset/RetrainData/{path}")
             print(accurary)
 
         model.saveRetrainModel()
 
 
-def main():
-    global model
-    while True:
+while True:
+    # global ser
+    # global cur_date
+    # global cur_hour
+    # if (count > 5):
+    #     temp = round(random.uniform(20.0, 50.0),2)
+    #     humi = round(random.uniform(70.0, 85.0),2)
+    #     light_intesity = round(random.uniform(100.0, 300.0),0)
+    #     soil_moisture = round(random.uniform(10.0, 45.0),2)
+    #     count = 0
+    #     collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
+    #     client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
+
+    # print(isMicrobitConected)
+    # print("while")
+    # global curTime
+    curTime = time.time()
+    retrainModel(curTime)
+
+    # print('Current Time in While', )
+
+    if isMicrobitConected:
+        # print("reading serial")
+        # check_wateringTime()
+        readSerial()
+    else:
+        if getPort() != "None":
+            global ser
+            ser = serial.Serial(port=getPort(), baudrate=115200)
+            isMicrobitConected = True
+
+    current_time = datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
+
+    cur_date = current_time.strftime(date_format)
+    cur_hour = current_time.strftime(hour_format)
+    # print(type(cur_date))
+    # print(type(cur_hour))
+    # print(type(task[1]['date']))
+    # print(type(task[1]['hour']))
+
+    # if (cur_hour == task[1]['date']):
+    #     print('')
+    # print(checkEqualTime(cur_date, cur_hour, task[1]['date'],task[1]['hour']))
+
+    controller()
+    if flagWateringTime:
+        check_wateringTime()
+
+    if (OldPumping != pumping):
         # global ser
-        # global cur_date
-        # global cur_hour
-        # if (count > 5):
-        #     temp = round(random.uniform(20.0, 50.0),2)
-        #     humi = round(random.uniform(70.0, 85.0),2)
-        #     light_intesity = round(random.uniform(100.0, 300.0),0)
-        #     soil_moisture = round(random.uniform(10.0, 45.0),2)
-        #     count = 0
-        #     collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
-        #     client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
-
-        # print(isMicrobitConected)
-        # print("while")
-        # global curTime
-        curTime = time.time()
-        retrainModel(curTime)
-
-        # print('Current Time in While', )
-
-        if isMicrobitConected:
-            # print("reading serial")
-            # check_wateringTime()
-            readSerial()
+        if pumping:
+            print('Turn on pump')
+            # ser.write("A".encode()) #Turn on pump
         else:
-            if getPort() != "None":
-                global ser
-                ser = serial.Serial(port=getPort(), baudrate=115200)
-                isMicrobitConected = True
+            print('Turn off pump')
+            # ser.write("a".encode()) #Turn off pump
+        OldPumping = pumping
 
-        current_time = datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
-
-        cur_date = current_time.strftime(date_format)
-        cur_hour = current_time.strftime(hour_format)
-        # print(type(cur_date))
-        # print(type(cur_hour))
-        # print(type(task[1]['date']))
-        # print(type(task[1]['hour']))
-
-        # if (cur_hour == task[1]['date']):
-        #     print('')
-        # print(checkEqualTime(cur_date, cur_hour, task[1]['date'],task[1]['hour']))
-
-        controller()
-        if flagWateringTime:
-            check_wateringTime()
-
-        if (OldPumping != pumping):
-            # global ser
-            if pumping:
-                print('Turn on pump')
-                # ser.write("A".encode()) #Turn on pump
-            else:
-                print('Turn off pump')
-                # ser.write("a".encode()) #Turn off pump
-            OldPumping = pumping
-
-        # count +=1
-        time.sleep(1)
+    # count +=1
+    time.sleep(1)

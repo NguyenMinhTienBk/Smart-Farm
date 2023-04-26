@@ -34,17 +34,17 @@ class IrrigationModel:
         num_data = []
         cate_data = []
 
-        num_data.append(data["cropDays"])
-        num_data.append(data["soilMoisture"])
-        num_data.append(data["temp"])
-        num_data.append(data["humidity"])
+        num_data.append(data[1])
+        num_data.append(data[2])
+        num_data.append(data[3])
+        num_data.append(data[4])
 
         num_data = np.array(num_data)
         num_data = num_data.reshape([1, -1])
         num_data = self.scaler.transform(num_data)
 
         for i in range(9):
-            if data["cropType"].value == i + 1:
+            if data[0].value == i + 1:
                 cate_data.append(1)
             else:
                 cate_data.append(0)
