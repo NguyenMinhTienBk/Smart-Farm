@@ -55,11 +55,7 @@ const HomeScreen = () => {
         const deviceResponse = await fetch(
           "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/values/timeseries?keys=temperature%2Chumidity%2Clight%2Csoilmoisture",
           {
-            headers: {
-              "X-Authorization":
-                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-              "Content-Type": "application/json",
-            },
+            headers: headers,
           }
         );
         const deviceData = await deviceResponse.json();
@@ -371,7 +367,7 @@ const HomeScreen = () => {
                 <Text style={styles.locationText}>Ho Chi Minh City</Text>
               </View>
               <Text style={styles.temp}>{temperature}°C</Text>
-              <Text style={styles.label}>Humidity: {soilmoisture}</Text>
+              <Text style={styles.label}>Humidity: {humidity}</Text>
             </View>
 
             <Image
@@ -394,7 +390,7 @@ const HomeScreen = () => {
                 size={24}
                 color="black"
               />
-              <Text style={styles.label}>{humidity}</Text>
+              <Text style={styles.label}>{soilmoisture}</Text>
             </View>
             <View style={styles.flexRow1}>
               <Entypo name="light-up" size={24} color="black" />

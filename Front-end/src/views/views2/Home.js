@@ -371,7 +371,7 @@ const HomeScreen = () => {
                 <Text style={styles.locationText}>Ho Chi Minh City</Text>
               </View>
               <Text style={styles.temp}>{temperature}°C</Text>
-              <Text style={styles.label}>Humidity: {soilmoisture}</Text>
+              <Text style={styles.label}>Humidity: {humidity}</Text>
             </View>
 
             <Image
@@ -394,7 +394,7 @@ const HomeScreen = () => {
                 size={24}
                 color="black"
               />
-              <Text style={styles.label}>{humidity}</Text>
+              <Text style={styles.label}>{soilmoisture}</Text>
             </View>
             <View style={styles.flexRow1}>
               <Entypo name="light-up" size={24} color="black" />
