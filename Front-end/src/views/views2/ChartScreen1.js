@@ -1,25 +1,126 @@
-import React, {useState} from 'react';
-import {View, Text, Button, StyleSheet} from 'react-native';
-import {LineChart} from 'react-native-chart-kit';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from "react-native";
 const screenWidth = Dimensions.get("window").width;
 
 const ChartScreen1 = () => {
   const [currentValue, setCurrentValue] = useState("Temperature");
+  const [temperature, setTemperature] = useState([]);
+  const [humidity, setHumidity] = useState([]);
+  const [soilmoisture, setSoilmoisture] = useState([]);
+  const [light, setLight] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch dữ liệu thiết bị
+        const deviceResponse = await fetch(
+          "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/values/timeseries?keys=temperature%2Chumidity%2Clight%2Csoilmoisture",
+          {
+            headers: {
+                           "X-Authorization":
+                             "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+                           "Content-Type": "application/json",
+              },
+          }
+        );
+        const deviceData = await deviceResponse.json();
+        const temperatureData =
+          deviceData.temperature && deviceData.temperature[0]?.value;
+        
+          setTemperature(prevTemperature => {
+    
+            if (prevTemperature.length >= 10) {
+            
+              return [temperatureData];
+             
+            } else {
+              // Thêm giá trị mới nhất vào cuối mảng
+              return [...prevTemperature, temperatureData];
+            }
+          });
+          const humidityData =
+          deviceData.humidity && deviceData.humidity[0]?.value;
+          setHumidity(prevhumidity => {
+    
+            if (prevhumidity.length >= 10) {
+            
+              return [humidityData];
+             
+            } else {
+              // Thêm giá trị mới nhất vào cuối mảng
+              return [...prevhumidity, humidityData];
+            }
+          });
+
+        const lightData = deviceData.light && deviceData.light[0]?.value;
+        setLight(prevlight => {
+    
+          if (prevlight.length >= 10) {
+          
+            return [lightData];
+           
+          } else {
+            // Thêm giá trị mới nhất vào cuối mảng
+            return [...prevlight, lightData];
+          }
+        });
+        const soilMoistureData =
+          deviceData.soilmoisture && deviceData.soilmoisture[0]?.value;
+          setSoilmoisture(prevsoilmoisture => {
+    
+            if (prevsoilmoisture.length >= 19) {
+            
+              return [soilMoistureData];
+             
+            } else {
+              // Thêm giá trị mới nhất vào cuối mảng
+              return [...prevsoilmoisture, soilMoistureData];
+            }
+          });
+
+
+       
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      setTimeout(fetchData, 5000);
+    };
+    fetchData();
+    
+    
+  }, []);
+  const initialTemData = [20];
+  const initialHudData = [20];
+  const initialLightData = [20];
+  const initialSoiData = [20];
+  
   const data = {
     Temperature: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jun','Jun','Jun','Jun','Jun','Jun','Jun','Jun'],
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
       datasets: [
         {
-          data: [25, 20, 26, 26, 35, 30,29,27,24,21,29,15,27,36],
+          data:  initialTemData.concat(temperature),
         },
       ],
     },
+    
     Humidity: {
+      
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
       datasets: [
         {
-          data: [30, 45, 40, 55, 60, 65],
+          
+          data: initialSoiData.concat(humidity),
+        },
+      ],
+    },
+    Soilmoisture: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      datasets: [
+        {
+          data: initialHudData.concat(soilmoisture),
         },
       ],
     },
@@ -27,7 +128,7 @@ const ChartScreen1 = () => {
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
       datasets: [
         {
-          data: [100, 200, 100, 158, 300, 350],
+          data: initialLightData.concat(light),
         },
       ],
     },
@@ -40,7 +141,7 @@ const ChartScreen1 = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        Biểu Đồ {currentValue === 'Temperature' ? 'Nhiệt Độ' : currentValue === 'Humidity' ? 'Độ Ẩm' : 'Ánh Sáng'}
+        Biểu Đồ {currentValue === 'Temperature' ? 'Nhiệt Độ' : currentValue === 'Humidity' ? 'Độ Ẩm Không Khí' : currentValue == 'Soilmoisture' ? 'Độ Ẩm đất' : 'Ánh Sáng'}
       </Text>
 
       <LineChart
@@ -48,37 +149,44 @@ const ChartScreen1 = () => {
         data={data[currentValue]}
         width={screenWidth}
         height={220}
+       
         chartConfig={{
-          backgroundColor: '#59ba8d',
-          backgroundGradientFrom: 'white',
-          backgroundGradientTo: 'white',
+          backgroundColor: "#59ba8d",
+          backgroundGradientFrom: "white",
+          backgroundGradientTo: "white",
           decimalPlaces: 0,
           color: (opacity = 1) =>
-          currentValue === 'Humidity'
-            ? `rgba(150, 0, 100, ${opacity})`
-            : currentValue === 'Light' ? `rgba(100, 127, 0, ${opacity})`
-            : `rgba(0, 110, 199, ${opacity})`,
-          // labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            currentValue === 'Humidity'
+              ? `rgba(150, 0, 100, ${opacity})`
+              : currentValue === 'Light' ? `rgba(100, 127, 0, ${opacity})`
+                : `rgba(0, 110, 199, ${opacity})`,
+          // labelColor: (opacity = 1) => rgba(255, 255, 255, ${opacity}),
           propsForDots: {
             r: "3",
             strokeWidth: "2",
-            stroke: "white"
+            stroke: "white",
           },
           style: {
             borderRadius: 16,
           },
-                    
+          yAxis: {
+            min: 25,
+            max: 35, // Thay đổi giá trị max tại đây
+            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        },
         }}
         // bezier
         style={{
           marginVertical: 8,
           borderRadius: 16,
         }}
+        
       />
       <View style={styles.buttonContainer}>
         <Button title="Nhiệt độ" onPress={() => handleToggle("Temperature")} />
-        <Button title="Độ Ẩm" onPress={() => handleToggle("Humidity")} />
+        <Button title="Độ Ẩm không khí" onPress={() => handleToggle("Humidity")} />
         <Button title="Ánh Sáng" onPress={() => handleToggle("Light")} />
+        <Button title="Độ ẩm đất" onPress={() => handleToggle("Soilmoisture")} />
       </View>
     </View>
   );
@@ -97,9 +205,10 @@ const styles = StyleSheet.create({
     color: "white",
   },
   buttonContainer: {
+    marginTop: 30,
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "60%",
+    width: "100%",
     marginLeft: 20,
   },
 });
