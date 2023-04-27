@@ -6,6 +6,8 @@ import { DateTime } from "luxon"; // Import thư viện Luxon
 const Notify = () => {
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
+  const [light, setLight] = useState(null);
+  const [soilmoisture, setSoilMoisture] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,8 +26,13 @@ const Notify = () => {
         // Lấy giá trị temperature, humidity, light, soilmoisture từ dữ liệu nhận về
         const temperatureData = data.temperature && data.temperature[0]?.value;
         const humidityData = data.humidity && data.humidity[0]?.value;
+        const lightData = data.light && data.light[0]?.value;
+        const soilmoistureData =
+          data.soilmoisture && data.soilmoisture[0]?.value;
         setTemperature(temperatureData);
         setHumidity(humidityData);
+        setLight(lightData);
+        setSoilMoisture(soilmoistureData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -39,17 +46,39 @@ const Notify = () => {
       {/* Kiểm tra cả 2 điều kiện */}
       {temperature && humidity && (
         <View style={styles.container}>
-          <Text style={styles.timeText}>
-            {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
-          </Text>
-
-          {temperature > 35 && (
-            <Text style={styles.contentText}>
-              Nhiệt độ hiện tại cao hơn 35 độ{" "}
-            </Text>
+          {(temperature < 20 || temperature > 50) && (
+            <View style={styles.item}>
+              <Text style={styles.timeText}>
+                {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
+              </Text>
+              <Text style={styles.contentText}>Nhiệt độ vượt ngưỡng. </Text>
+            </View>
+          )}
+          {(light < 1 || light > 50) && (
+            <View style={styles.item}>
+              <Text style={styles.timeText}>
+                {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
+              </Text>
+              <Text style={styles.contentText}>Ánh sáng vượt ngưỡng. </Text>
+            </View>
+          )}
+          {(soilmoisture < 50 || soilmoisture > 85) && (
+            <View style={styles.item}>
+              <Text style={styles.timeText}>
+                {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
+              </Text>
+              <Text style={styles.contentText}>Độ ẩm đất vượt ngưỡng. </Text>
+            </View>
           )}
           {humidity < 50 && (
-            <Text style={styles.contentText}>Độ ẩm hiện tại thấp hơn 50% </Text>
+            <View style={styles.item}>
+              <Text style={styles.timeText}>
+                {DateTime.now().toFormat("dd/MM/yyyy, HH:mm:ss")}
+              </Text>
+              <Text style={styles.contentText}>
+                Độ ẩm không khí hiện tại thấp hơn 50%{" "}
+              </Text>
+            </View>
           )}
         </View>
       )}
@@ -63,6 +92,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+  },
+  item: {
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    backgroundColor: "#DEDCDE",
+    marginVertical: 5,
   },
   timeText: {
     fontSize: 14,
