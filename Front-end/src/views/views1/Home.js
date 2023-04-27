@@ -33,6 +33,13 @@ const HomeScreen = () => {
   const [tasks, setTasks] = useState([]);
   const [tree, setTree] = useState("");
   const [date, setDate] = useState("");
+  const url =
+    "https://demo.thingsboard.io/api/plugins/rpc/oneway/1e296570-c966-11ed-b62c-7d8052ad39cf";
+  const headers = {
+    "X-Authorization":
+      "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+    "Content-Type": "application/json",
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,11 +55,7 @@ const HomeScreen = () => {
         const deviceResponse = await fetch(
           "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/values/timeseries?keys=temperature%2Chumidity%2Clight%2Csoilmoisture",
           {
-            headers: {
-              "X-Authorization":
-                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-              "Content-Type": "application/json",
-            },
+            headers: headers,
           }
         );
         const deviceData = await deviceResponse.json();
@@ -204,13 +207,6 @@ const HomeScreen = () => {
   };
 
   const updateSetPump = async (value) => {
-    const url =
-      "https://demo.thingsboard.io/api/plugins/rpc/oneway/1e296570-c966-11ed-b62c-7d8052ad39cf";
-    const headers = {
-      "X-Authorization":
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-      "Content-Type": "application/json",
-    };
     const data1 = {
       method: "Mode",
       params: "1",
@@ -260,13 +256,6 @@ const HomeScreen = () => {
   };
 
   const updateSetPump1 = async (value) => {
-    const url =
-      "https://demo.thingsboard.io/api/plugins/rpc/oneway/1e296570-c966-11ed-b62c-7d8052ad39cf";
-    const headers = {
-      "X-Authorization":
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-      "Content-Type": "application/json",
-    };
     const data = { ...value };
     try {
       const response = await fetch(url, {
@@ -294,7 +283,11 @@ const HomeScreen = () => {
 
       // Chờ 1 giây, sau đó gửi dữ liệu selectedPlant
       setTimeout(() => {
-        updateSetPump1({ method: "selectedPlant", params: tree, timeout: 500 });
+        updateSetPump1({
+          method: "selectedPlant",
+          params: tree.toUpperCase(),
+          timeout: 500,
+        });
 
         // Chờ 1 giây, sau đó gửi dữ liệu selectedDate
         setTimeout(() => {
@@ -315,13 +308,6 @@ const HomeScreen = () => {
   };
 
   const updateSetPump2 = async (value) => {
-    const url =
-      "https://demo.thingsboard.io/api/plugins/rpc/oneway/1e296570-c966-11ed-b62c-7d8052ad39cf";
-    const headers = {
-      "X-Authorization":
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-      "Content-Type": "application/json",
-    };
     const data = { ...value };
     try {
       const response = await fetch(url, {
@@ -439,10 +425,14 @@ const HomeScreen = () => {
           style={[
             styles.autoButton,
             {
-              backgroundColor: buttonPump === "Bật máy bơm" ? "grey" : "red",
+              backgroundColor:
+                buttonText === "Dừng" || buttonText2 === "Dừng"
+                  ? "grey"
+                  : "#48319D",
             },
           ]}
           onPress={handleTogglePump}
+          disabled={buttonText === "Dừng" || buttonText2 === "Dừng"}
         >
           <Text style={styles.autoWateringButtonText}>{buttonPump}</Text>
         </TouchableOpacity>
@@ -455,7 +445,16 @@ const HomeScreen = () => {
           </Text>
           <View style={styles.wateringSetting}>
             <TouchableOpacity
-              style={styles.autoWateringButton}
+              style={[
+                styles.autoWateringButton,
+                {
+                  backgroundColor:
+                    buttonPump === "Tắt máy bơm" || buttonText2 === "Dừng"
+                      ? "grey"
+                      : "#48319D",
+                },
+              ]}
+              disabled={buttonPump === "Tắt máy bơm" || buttonText2 === "Dừng"}
               onPress={handleTogglePump1}
             >
               <Text style={styles.autoWateringButtonText}>{buttonText}</Text>
@@ -473,12 +472,21 @@ const HomeScreen = () => {
 
         <View style={[styles.autoWatering, styles.autoWatering2]}>
           <Text style={styles.textWatering}>
-            <Text style={styles.autoWateringTitle}>Tưới thủ công</Text>
+            <Text style={styles.autoWateringTitle}>Tưới theo lịch</Text>
           </Text>
           <View style={styles.wateringSetting}>
             <TouchableOpacity
-              style={styles.autoWateringButton}
+              style={[
+                styles.autoWateringButton,
+                {
+                  backgroundColor:
+                    buttonPump === "Tắt máy bơm" || buttonText === "Dừng"
+                      ? "grey"
+                      : "#48319D",
+                },
+              ]}
               onPress={handleTogglePump2}
+              disabled={buttonPump === "Tắt máy bơm" || buttonText === "Dừng"}
             >
               <Text style={styles.autoWateringButtonText}>{buttonText2}</Text>
             </TouchableOpacity>
@@ -652,7 +660,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "grey",
+    backgroundColor: "#48319D",
     opacity: 0.8,
     borderRadius: 10,
     alignItems: "center",

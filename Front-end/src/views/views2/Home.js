@@ -31,6 +31,15 @@ const HomeScreen = () => {
   const [light, setLight] = useState(null);
   const [soilmoisture, setSoilMoisture] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [tree, setTree] = useState("");
+  const [date, setDate] = useState("");
+  const url =
+    "https://demo.thingsboard.io/api/plugins/rpc/oneway/1e296570-c966-11ed-b62c-7d8052ad39cf";
+  const headers = {
+    "X-Authorization":
+      "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
+    "Content-Type": "application/json",
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,6 +81,10 @@ const HomeScreen = () => {
 
         // Lấy giá trị email từ AsyncStorage
         const email = await AsyncStorage.getItem("email");
+        const tree = await AsyncStorage.getItem("tree");
+        setTree(tree);
+        const date = await AsyncStorage.getItem("date");
+        setDate(date);
         // Gọi API với email lấy được từ AsyncStorage
         const response = await client.get(`/get-value-manual/${email}`);
         // Lấy dữ liệu trả về từ API và cập nhật vào state tasks
@@ -80,8 +93,10 @@ const HomeScreen = () => {
         console.error("Error fetching data:", error);
       }
     };
-
-    fetchData();
+    const intervalId = setInterval(fetchData, 10000);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   if (!weatherData) {
@@ -128,9 +143,9 @@ const HomeScreen = () => {
     const day = d.getDate();
     const month = d.getMonth() + 1;
     const year = d.getFullYear();
-    return `${day < 10 ? "0" + day : day}:${
+    return `${day < 10 ? "0" + day : day}-${
       month < 10 ? "0" + month : month
-    }:${year}`;
+    }-${year}`;
   };
 
   // Hàm để định dạng giờ theo định dạng hh:mm
@@ -196,24 +211,40 @@ const HomeScreen = () => {
   };
 
   const updateSetPump = async (value) => {
-    const url =
-      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
-    const headers = {
-      "X-Authorization":
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-      "Content-Type": "application/json",
+    const data1 = {
+      method: "Mode",
+      params: "1",
+      timeout: 500,
     };
-    const data = { ...value };
+    const data2 = {
+      method: "setPump",
+      params: value,
+      timeout: 500,
+    };
     try {
-      const response = await fetch(url, {
+      const response1 = await fetch(url, {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(data),
+        body: JSON.stringify(data1),
       });
-      if (response.ok) {
+      if (response1.ok) {
+        console.log("Mode updated to 1");
+      } else {
+        console.error("Failed to update Mode = 1");
+      }
+
+      // Đợi 1 giây trước khi gửi dữ liệu tiếp theo
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const response2 = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data2),
+      });
+      if (response2.ok) {
         console.log(`SetPump updated to ${value}`);
       } else {
-        console.error("Failed to update SetPump1");
+        console.error("Failed to update SetPump");
       }
     } catch (error) {
       console.error(`Failed to update SetPump: ${error}`);
@@ -222,24 +253,13 @@ const HomeScreen = () => {
 
   const handleTogglePump = () => {
     const newPumpValue = setPump === 0 ? 1 : 0;
-    const newModeValue = 1;
-    updateSetPump({
-      Mode: newModeValue,
-      setPump: newPumpValue,
-    });
+    updateSetPump(newPumpValue);
 
     setSetPump(newPumpValue);
     setButtonPump(newPumpValue === 1 ? "Tắt máy bơm" : "Bật máy bơm");
   };
 
   const updateSetPump1 = async (value) => {
-    const url =
-      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
-    const headers = {
-      "X-Authorization":
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-      "Content-Type": "application/json",
-    };
     const data = { ...value };
     try {
       const response = await fetch(url, {
@@ -248,34 +268,50 @@ const HomeScreen = () => {
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        console.log(`SetPump1 updated to ${value}`);
+        console.log(`Success: ${value}`);
       } else {
-        console.error("Failed to update SetPump1");
+        console.error("Failed ");
       }
     } catch (error) {
-      console.error(`Failed to update SetPump: ${error}`);
+      console.error(`Failed: ${error}`);
     }
   };
 
   const handleTogglePump1 = () => {
     const newPumpValue = setPump1 === 0 ? 1 : 0;
-    const newModeValue = 3;
-    updateSetPump1({
-      Mode: newModeValue,
-    });
+    const newButtonText = newPumpValue === 1 ? "Dừng" : "Tưới 1";
+
+    if (newButtonText === "Dừng") {
+      // Gửi dữ liệu Mode:3
+      updateSetPump1({ method: "Mode", params: "3", timeout: 500 });
+
+      // Chờ 1 giây, sau đó gửi dữ liệu selectedPlant
+      setTimeout(() => {
+        updateSetPump1({
+          method: "selectedPlant",
+          params: tree.toUpperCase(),
+          timeout: 500,
+        });
+
+        // Chờ 1 giây, sau đó gửi dữ liệu selectedDate
+        setTimeout(() => {
+          updateSetPump1({
+            method: "selectedDate",
+            params: date,
+            timeout: 500,
+          });
+        }, 1000);
+      }, 1000);
+    } else {
+      // Gửi dữ liệu Mode:0
+      updateSetPump1({ method: "Mode", params: "1", timeout: 500 });
+    }
 
     setSetPump1(newPumpValue);
-    setButtonText(newPumpValue === 1 ? "Dừng" : "Tưới 1");
+    setButtonText(newButtonText);
   };
 
   const updateSetPump2 = async (value) => {
-    const url =
-      "https://demo.thingsboard.io/api/plugins/telemetry/DEVICE/1e296570-c966-11ed-b62c-7d8052ad39cf/SHARED_SCOPE";
-    const headers = {
-      "X-Authorization":
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0aWVuLm5ndXllbm1pbmh0aWVuMjYwOTAyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImIwYzRiN2EwLWM5NDItMTFlZC1iNjJjLTdkODA1MmFkMzljZiIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiYzgxNWRmOTgtMWQxYS00MDBmLTlhNDAtODM1MDhjZWViYTNmIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2ODE4Nzg1MzQsImV4cCI6MTY4MzY3ODUzNCwiZmlyc3ROYW1lIjoiTmd1eeG7hW4gbWluaCIsImxhc3ROYW1lIjoiVGnhur9uIiwiZW5hYmxlZCI6dHJ1ZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYWVkNDMyNDAtYzk0Mi0xMWVkLWI2MmMtN2Q4MDUyYWQzOWNmIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.J8WwrqaeGVQNwE7_I8X4c87z2PQRFPh4iofczRsUN6i9t8s4FwG9qifaZ2hxLmwEBUn305Cy3bil4SDFdxbU-w",
-      "Content-Type": "application/json",
-    };
     const data = { ...value };
     try {
       const response = await fetch(url, {
@@ -284,21 +320,28 @@ const HomeScreen = () => {
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        console.log(`SetPump2 updated to ${value}`);
+        console.log(`Success: ${value}`);
       } else {
-        console.error("Failed to update SetPump2");
+        console.error("Failed");
       }
     } catch (error) {
-      console.error(`Failed to update SetPump2: ${error}`);
+      console.error(`Failed: ${error}`);
     }
   };
 
   const handleTogglePump2 = () => {
     const newPumpValue = setPump2 === 0 ? 1 : 0;
-    const newModeValue = 2;
-    updateSetPump2({ Mode: newModeValue, Tasks: taskPost });
+    if (newPumpValue === 1) {
+      updateSetPump2({ method: "Mode", params: "2", timeout: 500 }); // Gửi dữ liệu {method: "Mode", params: 2}
+      setTimeout(() => {
+        updateSetPump2({ method: "task", params: taskPost, timeout: 500 }); // Gửi dữ liệu {method: "task", params: taskPost}
+      }, 1000); // Đợi 1 giây trước khi gửi dữ liệu thứ 2
+      setButtonText2("Dừng");
+    } else {
+      updateSetPump2({ method: "Mode", params: "1", timeout: 500 }); // Gửi dữ liệu {method: "Mode", params: 0}
+      setButtonText2("Tưới 2");
+    }
     setSetPump2(newPumpValue);
-    setButtonText2(newPumpValue === 1 ? "Dừng" : "Tưới 2");
   };
 
   return (
@@ -386,10 +429,14 @@ const HomeScreen = () => {
           style={[
             styles.autoButton,
             {
-              backgroundColor: buttonPump === "Bật máy bơm" ? "grey" : "red",
+              backgroundColor:
+                buttonText === "Dừng" || buttonText2 === "Dừng"
+                  ? "grey"
+                  : "#48319D",
             },
           ]}
           onPress={handleTogglePump}
+          disabled={buttonText === "Dừng" || buttonText2 === "Dừng"}
         >
           <Text style={styles.autoWateringButtonText}>{buttonPump}</Text>
         </TouchableOpacity>
@@ -402,7 +449,16 @@ const HomeScreen = () => {
           </Text>
           <View style={styles.wateringSetting}>
             <TouchableOpacity
-              style={styles.autoWateringButton}
+              style={[
+                styles.autoWateringButton,
+                {
+                  backgroundColor:
+                    buttonPump === "Tắt máy bơm" || buttonText2 === "Dừng"
+                      ? "grey"
+                      : "#48319D",
+                },
+              ]}
+              disabled={buttonPump === "Tắt máy bơm" || buttonText2 === "Dừng"}
               onPress={handleTogglePump1}
             >
               <Text style={styles.autoWateringButtonText}>{buttonText}</Text>
@@ -420,12 +476,21 @@ const HomeScreen = () => {
 
         <View style={[styles.autoWatering, styles.autoWatering2]}>
           <Text style={styles.textWatering}>
-            <Text style={styles.autoWateringTitle}>Tưới thủ công</Text>
+            <Text style={styles.autoWateringTitle}>Tưới theo lịch</Text>
           </Text>
           <View style={styles.wateringSetting}>
             <TouchableOpacity
-              style={styles.autoWateringButton}
+              style={[
+                styles.autoWateringButton,
+                {
+                  backgroundColor:
+                    buttonPump === "Tắt máy bơm" || buttonText === "Dừng"
+                      ? "grey"
+                      : "#48319D",
+                },
+              ]}
               onPress={handleTogglePump2}
+              disabled={buttonPump === "Tắt máy bơm" || buttonText === "Dừng"}
             >
               <Text style={styles.autoWateringButtonText}>{buttonText2}</Text>
             </TouchableOpacity>
@@ -599,7 +664,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "grey",
+    backgroundColor: "#48319D",
     opacity: 0.8,
     borderRadius: 10,
     alignItems: "center",
