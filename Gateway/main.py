@@ -16,16 +16,16 @@ from Date import *
 
 # for timezone()
 import pytz
-DIC_PATTH = 'D:/OneDrive - m4n7/BK/HK222/DADN CNPM/Smart-Farm-Git/Gateway'
+DIC_PATTH = 'Gateway'
 # using now() to get current time
 date_format = '%d-%m-%Y'
 hour_format = '%H:%M'
 current_time = datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 curTime = time.time()
-last_update = ''
-
-# AI model
+last_update = datetime.datetime(2023, 4, 25)
 model = IrrigationModel()
+# AI model
+
 
 # cur_date = current_time.strftime(date_format)
 # cur_hour = current_time.strftime(hour_format)
@@ -52,25 +52,22 @@ OldPumping = pumping
 pumpIntervel = 20*60
 wateringTime = float(0)
 flagWateringTime = False
-selectedPlant = 'POTATO'
+selectedPlant = None
 Mode = IRRIGATION_MANUAL
 setPump = False
-plantType = 6
-selectedDate = "01-01-2023"
-temp_cur = 25
-humi_cur = 80
-light_cur = 100
-soil_cur = 40
+plantType = None
+selectedDate = None
+temp_cur = None
+humi_cur = None
+light_cur = None
+soil_cur = None
 
 # task = [
 #             {"amountOfWater" : "", "date" : "",  "hour" : ""},
 #             {"amountOfWater" :"",  "date":"","hour":""}
 #         ]
 
-taskList = [
-    {"amountOfWater": "1000", "date": "21-04-2023",  "hour": "15:30"},
-    {"amountOfWater": "1200",  "date": "23-04-2023", "hour": "11:45"}
-]
+taskList = []
 
 
 print("Xin chào ThingsBoard")
@@ -162,6 +159,8 @@ def recv_message(client, userdata, message):
                            json.dumps(temp_data), 1)
             global taskList
             taskList = jsonobj['params']
+            for task in taskList:
+                task['pumped'] = False
             print(type(taskList))
             # print(task[1])
             # print(type(task[1]['date']))
@@ -206,6 +205,7 @@ def processData(data):
     splitData = data.split(":")
     print(splitData)
     try:
+        collect_data = None
         if splitData[0] == "1":
             if splitData[1] == "TEMP":
                 # client.publish("bbc-temp", splitData[2])
@@ -213,36 +213,36 @@ def processData(data):
                 # print(temp)
                 collect_data = {'temperature': splitData[2]}
                 global temp_cur
-                temp_cur = splitData[2]
+                temp_cur = float(splitData[2])
             elif splitData[1] == "HUMI":
                 # client.publish("bbc-humi", splitData[2])
                 # humi = splitData[2]
                 collect_data = {'humidity': splitData[2]}
                 global humi_cur
-                humi_cur = splitData[2]
-
+                humi_cur = float(splitData[2])
             elif splitData[1] == "SOIL":
                 # soil_moisture = splitData[2]
                 collect_data = {'soilmoisture': splitData[2]}
                 global soil_cur
-                soil_cur = splitData[2]
+                soil_cur = float(splitData[2])
             elif splitData[1] == "LIGHT":
                 # light_intesity = splitData[2]
                 collect_data = {'light': splitData[2]}
                 global light_cur
-                light_cur = splitData[2]
+                light_cur = float(splitData[2])
         # elif splitData[0] == "2":
         #     if splitData[1] == "TEMP":
         #         client.publish("bbc-temp-2", splitData[2])
         #     elif splitData[1] == "HUMI":
         #         client.publish("bbc-humi-2", splitData[2])
 
-        # collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
-        print(collect_data)
-        client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
+            # collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
+            print(collect_data)
+            print()
+            client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
 
     except:  # if given data error
-        pass
+        print('err')
 
 
 mess = ""
@@ -285,21 +285,21 @@ def Plantype():
     global plantType
     global selectedPlant
     if (selectedPlant == "GROUND_NUTS"):
-        plantType = Plant.GROUND_NUTS.value
+        plantType = Plant.GROUND_NUTS
     elif(selectedPlant == "WHEET"):
-        plantType = Plant.WHEET.value
+        plantType = Plant.WHEET
     elif(selectedPlant == "GARDEN_FLOWERS"):
-        plantType = Plant.GARDEN_FLOWERS.value
+        plantType = Plant.GARDEN_FLOWERS
     elif(selectedPlant == "MAIZE"):
-        plantType = Plant.MAIZE.value
+        plantType = Plant.MAIZE
     elif(selectedPlant == "PADDY"):
-        plantType = Plant.PADDY.value
+        plantType = Plant.PADDY
     elif(selectedPlant == "POTATO"):
-        plantType = Plant.POTATO.value
+        plantType = Plant.POTATO
     elif(selectedPlant == "PULSE"):
-        plantType = Plant.PULSE.value
+        plantType = Plant.PULSE
     elif(selectedPlant == "COFFEE"):
-        plantType = Plant.COFFEE.value
+        plantType = Plant.COFFEE
     return plantType
 
 
@@ -311,6 +311,9 @@ def controller():
     global flagWateringTime
     global model
     global cur_date
+    global soil_cur
+    global temp_cur
+    global humi_cur
     # global cur_hour
     # print(type(Mode))
     # print(IRRIGATION_AUTO, IRRIGATION_CALENDAR, IRRIGATION_MANUAL)
@@ -318,19 +321,24 @@ def controller():
     # global taskList
 
     if Mode == IRRIGATION_AUTO:  # Assign to AI Model
-
         # CropType, cropDays, soilMoisture, temp, humidity
         print('In IRRIGATION_AUTO')
-        print('Type Plant:', selectedPlant)
-        print('Number of days planted: ',
-              days_between_dates(selectedDate, cur_date), )
 
         # ai prediction
-        if soil_cur is None or temp_cur is None or humi_cur is None:
-            soil_cur_2 = 1024 - soil_cur * 1024/100
+        if not (soil_cur is None or temp_cur is None or humi_cur is None or selectedDate is None):
+            print('Type Plant:', selectedPlant)
+            print('Number of days planted: ',
+                days_between_dates(selectedDate, cur_date), )
+            
+            soil_cur_2 = int(1024 - soil_cur * 1024/100)
             data = [Plantype(), days_between_dates(selectedDate, cur_date),
                     soil_cur_2, temp_cur, humi_cur]
-            pumping = model.doIrrigate(data)
+            print()
+            print('predict data', data)
+            predict = model.doIrrigate(data)
+            pumping = predict if predict is not None else pumping
+            print("predict: ", pumping)
+            print()
 
             soil_cur = None
             temp_cur = None
@@ -349,8 +357,10 @@ def controller():
             # print(cur_date)
             # print(cur_hour)
             print(flagWateringTime)
-            if checkEqualTime(cur_date, cur_hour, x['date'], x['hour']) and flagWateringTime == False:
+            # print(x)
+            if checkEqualTime(cur_date, cur_hour, x['date'], x['hour']) and flagWateringTime == False and x['pumped'] is False:
                 print('Tuoi lich', x['hour'], x['date'])
+                print(type(x['hour']))
                 wateringTime = (
                     float(x['amountOfWater']) / fLowPump) * 60  # seconds
                 # print(wateringTime)
@@ -360,6 +370,7 @@ def controller():
                 onTime = curTime
                 print('OnTime: ', onTime)
                 flagWateringTime = True
+                x['pumped'] = True
                 # print(flagWateringTime)
     else:  # IRRIGATION_MANUAL
         print('In IRRIGATION_MANUAL')
@@ -415,53 +426,64 @@ def saveSensorData():
     global soil_cur
     global temp_cur
     global humi_cur
+    global cur_date
 
-    cur_day = datetime.datetime.now()
-    month = cur_day.month
-    year = cur_day.year
-    soil_cur_2 = int(1024 - soil_cur * 1024/100)
+    if soil_cur is not None and temp_cur is not None and humi_cur is not None and selectedPlant is not None:
+        cur_day = datetime.datetime.now()
+        month = cur_day.month
+        year = cur_day.year
+        soil_cur_2 = int(1024 - soil_cur * 1024/100)
 
-    with open(f"./AI/Dataset/RetrainData/data_{month}_{year}.csv", mode='w') as employee_file:
-        employee_writer = csv.writer(
-            employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        path = f'Gateway/AI/RetrainData/data_{month}_{year}.csv'
+        
+        with open(path, mode='a', newline='') as employee_file:
+            employee_writer = csv.writer(
+                employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            
+            typ = [0,0,0,0,0,0,0,0,0]
+            typ[Plantype().value - 1] = 1
+            data = [days_between_dates(selectedDate, cur_date),
+                                    soil_cur_2, temp_cur, humi_cur, int(evaluatePump(soil_cur_2))] + typ
+            employee_writer.writerow(data)
 
-        employee_writer.writerow([Plantype(), days_between_dates(selectedDate, cur_day),
-                                  soil_cur_2, temp_cur, humi_cur, evaluatePump(soil_cur_2)])
 
-
-def retrainModel(curTime):
+def retrainModel():
     global model
     global last_update
+    if model is not None:
+        cur_day = datetime.datetime.now()
+        month = cur_day.month
+        year = cur_day.year
+        tdelta = cur_day - last_update
+        
+        file_list = []
 
-    cur_day = datetime.datetime.now()
-    month = cur_day.month
-    year = cur_day.year
-    tdelta = cur_day - last_update
-    file_list = []
+        for i in range(3):
+            m = month - i
+            y = year
+            if m <= 0:
+                m = 12 + m
+                y = year - 1
+            name = f"data_{m}_{y}.csv"
 
-    for i in range(3):
-        m = month - i
-        y = year
-        if m <= 0:
-            m = 12 + m
-            y = year - 1
+            if os.path.exists(DIC_PATTH + '/AI/RetrainData/' + name):
+                file_list += [name]
+            
 
-    name = f"data_{m}_{y}.csv"
-    print(os.getcwd() + '/' + name)
-    if os.path.exists(os.getcwd() + '/' + name):
-        file_list += [name]
+        if(tdelta.total_seconds() > 14*24*60*60):
+            last_update = cur_day
 
-    if(tdelta.total_seconds > 14*24*60*60):
-        last_update = curTime
+            retrain_model = model.loadModel(DIC_PATTH + '/AI/irrigationModel_v5.joblib')
+            # 3 last months
+            flag = False
+            for path in file_list:
+                flag = True
+                accurary = model.retrainModel(
+                    retrain_model, DIC_PATTH + f"/AI/RetrainData/{path}")
+                print(accurary)
 
-        retrain_model = model.loadModel('irrigationModel.joblib')
-        # 3 last months
-        for path in file_list:
-            accurary = model.retrainModel(
-                retrain_model, f"./AI/Dataset/RetrainData/{path}")
-            print(accurary)
-
-        model.saveRetrainModel()
+            if flag and accurary > 0.85:
+                model.saveRetrainModel()
 
 
 while True:
@@ -481,7 +503,7 @@ while True:
     # print("while")
     # global curTime
     curTime = time.time()
-    retrainModel(curTime)
+    retrainModel()
 
     # print('Current Time in While', )
 
@@ -499,6 +521,7 @@ while True:
 
     cur_date = current_time.strftime(date_format)
     cur_hour = current_time.strftime(hour_format)
+    
     # print(type(cur_date))
     # print(type(cur_hour))
     # print(type(task[1]['date']))

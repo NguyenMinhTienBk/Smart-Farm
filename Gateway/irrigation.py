@@ -23,8 +23,8 @@ class Plant(Enum):
 
 class IrrigationModel:
     def __init__(self) -> None:
-        self.scaler = joblib.load('D:/OneDrive - m4n7/BK/HK222/DADN CNPM/Smart-Farm-Git/Gateway/AI/std_scaler.bin')
-        self.model = joblib.load('D:/OneDrive - m4n7/BK/HK222/DADN CNPM/Smart-Farm-Git/Gateway/AI/irrigationModel.joblib')
+        self.scaler = joblib.load('Gateway/AI/std_scaler_v5.bin')
+        self.model = joblib.load('Gateway/AI/irrigationModel_v5.joblib')
         self.onTime = None
         self.offTime = None
         self.maxPumpTime = 30*60
@@ -99,24 +99,23 @@ class IrrigationModel:
                 return False
 
     def preprocesDataset(self, df):
-        df = df.dropna()
+        res = df.dropna()
         # Convert the 'CropType' column into categorical data
-        df['CropType'] = pd.Categorical(df['CropType'])
+        # res['CropType'] = pd.Categorical(res['CropType'])
 
         # Convert the categorical data into numerical data using one-hot encoding
-        df = pd.get_dummies(df, columns=['CropType'])
+        # res = pd.get_dummies(res, columns=['CropType'])
 
         # Standardize the numerical data using the StandardScaler
         num_cols = ['cropDays', 'soilMoisture', 'temp', 'humidity']
-        df[num_cols] = self.scaler.fit_transform(df[num_cols])
+        res[num_cols] = self.scaler.fit_transform(res[num_cols])
 
-        return df
+        return res
 
     def retrainModel(self, model, file_path):
-        retrain_df = pd.read_csv(file_path)
-        retrain_df.columns = ['CropType', 'cropDays',
-                              'soilMoisture', 'temp', 'humidity', 'pump']
-        retrain_df = self.preprocesDataset(retrain_df)
+        df = pd.read_csv(file_path)
+        df.columns = ['cropDays', 'soilMoisture', 'temp', 'humidity', 'pump', 'CropType_1', 'CropType_2', 'CropType_3', 'CropType_4', 'CropType_5', 'CropType_6', 'CropType_7', 'CropType_8', 'CropType_9']
+        retrain_df = self.preprocesDataset(df)
 
         x = np.array(retrain_df.drop(['pump'], 1))
         y = np.array(retrain_df['pump'])
@@ -131,13 +130,13 @@ class IrrigationModel:
         accuracy = accuracy_score(y_test, y_pred)
 
         #  save model
-        joblib.dump(model, "irrigationModel_temp.joblib")
+        joblib.dump(model, "Gateway/AI/irrigationModel_temp.joblib")
 
         return accuracy
 
     def saveRetrainModel(self):
-        temp_model = self.loadModel("irrigationModel_temp.joblib")
-        joblib.dump(temp_model, "irrigationModel_temp.joblib")
+        temp_model = self.loadModel("Gateway/AI/irrigationModel_temp.joblib")
+        joblib.dump(temp_model, "Gateway/AI/irrigationModel_temp.joblib")
 
     def loadModel(self, path):
         model = joblib.load(path)
