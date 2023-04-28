@@ -49,7 +49,7 @@ onTime = float(0)
 offTime = float(0)
 pumping = False
 OldPumping = pumping
-pumpIntervel = 20*60
+pumpIntervel = 5*60
 wateringTime = float(0)
 flagWateringTime = False
 selectedPlant = None
@@ -458,7 +458,7 @@ def retrainModel():
         
         file_list = []
 
-        for i in range(3):
+        for i in range(1):
             m = month - i
             y = year
             if m <= 0:
@@ -470,7 +470,7 @@ def retrainModel():
                 file_list += [name]
             
 
-        if(tdelta.total_seconds() > 14*24*60*60):
+        if(tdelta.total_seconds() > 30*24*60*60):
             last_update = cur_day
 
             retrain_model = model.loadModel(DIC_PATTH + '/AI/irrigationModel_v5.joblib')
