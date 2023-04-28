@@ -27,8 +27,8 @@ class IrrigationModel:
         self.model = joblib.load('Gateway/AI/irrigationModel_v5.joblib')
         self.onTime = None
         self.offTime = None
-        self.maxPumpTime = 30*60
-        self.pumpIntervel = 20*60
+        self.maxPumpTime = 150*60
+        self.pumpIntervel = 5*60
         self.pumping = False
 
     def preprocessData(self, data):
