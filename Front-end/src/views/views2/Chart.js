@@ -8,10 +8,7 @@ const Chart = () =>{
     return(
         <View style={styles.container}>
           <DateScreen/>
-          <ChartScreen1/>
-
-      
-    
+          <ChartScreen1/> 
         </View>
     );
 };
