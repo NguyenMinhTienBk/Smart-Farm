@@ -4,7 +4,9 @@ const mongoose = require("mongoose");
 const valueManualSchema = new mongoose.Schema({
   waterAmount: {
     type: String,
-    required: true,
+  },
+  time: {
+    type: String,
   },
   selectedDate: {
     type: Date,

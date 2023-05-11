@@ -12,11 +12,18 @@ export default function Task(props) {
       <View style={styles.middleContent}>
         <Text style={styles.middleContent__text2}>{props.selectedHour}</Text>
         <Text style={styles.middleContent__text2}>{props.selectedDate}</Text>
+        {props.waterAmount ? (
+          <Text style={styles.middleContent__text2}>
+            Lượng nước tưới: {props.waterAmount} lít
+          </Text>
+        ) : (
+          <Text style={styles.middleContent__text2}>
+            Thời gian tưới: {props.time} phút{" "}
+          </Text>
+        )}
       </View>
-      <View style={styles.contain}>
-        <Text style={styles.LastNumberText}>{props.waterAmount}</Text>
-      </View>
-      <View>
+
+      <View style={styles.botttom}>
         <TouchableOpacity onPress={() => props.handleDeleteTask(props.taskId)}>
           <Icon name="trash" size={30} color="red" />
         </TouchableOpacity>
@@ -32,7 +39,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 10,
     borderRadius: 10,
-    justifyContent: "space-between",
   },
   square: {
     width: 48,
@@ -41,10 +47,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#53d6f2",
     alignItems: "center",
     justifyContent: "center",
+    flex: 1,
   },
-  middleContent: {},
+  middleContent: { flex: 5, marginLeft: 25 },
   middleContent__text2: {
     fontSize: 13,
+  },
+  botttom: {
+    flex: 1,
   },
   contain: { justifyContent: "flex-start", width: "20%" },
   LastNumberText: {

@@ -13,7 +13,8 @@ const {
 } = require("../controller/automatic");
 
 const {
-  createValueManual,
+  createValueManual1,
+  createValueManual2,
   getValueManualByEmail,
   deleteTask,
 } = require("../controller/manual");
@@ -39,7 +40,8 @@ router.post("/create-tree-system", createTreeSystem);
 router.put("/update-tree-system/:email", updateTreeSystemByEmail);
 
 //Manual
-router.post("/create-value-manual", createValueManual);
+router.post("/create-value-manual1", createValueManual1);
+router.post("/create-value-manual2", createValueManual2);
 router.get("/get-value-manual/:email", getValueManualByEmail);
 router.delete("/delete-task/:id", deleteTask);
 

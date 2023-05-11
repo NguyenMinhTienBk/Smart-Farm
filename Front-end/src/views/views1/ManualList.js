@@ -112,6 +112,7 @@ export default function ManualList() {
           <Task
             key={task.id}
             waterAmount={task.waterAmount}
+            time={task.time}
             selectedDate={formatSelectedDate(task.selectedDate)} // Sử dụng hàm formatSelectedDate để định dạng ngày
             selectedHour={formatSelectedHour(task.selectedHour)} // Sử dụng hàm formatSelectedHour để định dạng giờ
             count={index + 1}
