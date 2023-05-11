@@ -192,7 +192,6 @@ def getPort():
             commPort = (splitPort[0])
             commPort = "COM5"
 
-
     print(commPort)
     return commPort
 
@@ -239,7 +238,8 @@ def processData(data):
             # collect_data = {'temperature': temp, 'humidity': humi, 'light': light_intesity, 'soilmoisture': soil_moisture}
             print(collect_data)
             print()
-            client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
+            client.publish('v1/devices/me/telemetry',
+                           json.dumps(collect_data), 1)
 
     except:  # if given data error
         print('err')
@@ -328,8 +328,8 @@ def controller():
         if not (soil_cur is None or temp_cur is None or humi_cur is None or selectedDate is None):
             print('Type Plant:', selectedPlant)
             print('Number of days planted: ',
-                days_between_dates(selectedDate, cur_date), )
-            
+                  days_between_dates(selectedDate, cur_date), )
+
             soil_cur_2 = int(1024 - soil_cur * 1024/100)
             data = [Plantype(), days_between_dates(selectedDate, cur_date),
                     soil_cur_2, temp_cur, humi_cur]
@@ -361,8 +361,13 @@ def controller():
             if checkEqualTime(cur_date, cur_hour, x['date'], x['hour']) and flagWateringTime == False and x['pumped'] is False:
                 print('Tuoi lich', x['hour'], x['date'])
                 print(type(x['hour']))
-                wateringTime = (
-                    float(x['amountOfWater']) / fLowPump) * 60  # seconds
+                wateringTime = 0
+                if 'amountOfWater' in x:
+                    wateringTime = (
+                        float(x['amountOfWater']) / fLowPump) * 60  # seconds
+                elif 'time' in x:
+                    wateringTime = x['time'] * 60  # seconds
+
                 # print(wateringTime)
                 print('Watering Time: ', wateringTime, ' seconds')
                 pumping = True
@@ -435,15 +440,15 @@ def saveSensorData():
         soil_cur_2 = int(1024 - soil_cur * 1024/100)
 
         path = f'Gateway/AI/RetrainData/data_{month}_{year}.csv'
-        
+
         with open(path, mode='a', newline='') as employee_file:
             employee_writer = csv.writer(
                 employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            
-            typ = [0,0,0,0,0,0,0,0,0]
+
+            typ = [0, 0, 0, 0, 0, 0, 0, 0, 0]
             typ[Plantype().value - 1] = 1
             data = [days_between_dates(selectedDate, cur_date),
-                                    soil_cur_2, temp_cur, humi_cur, int(evaluatePump(soil_cur_2))] + typ
+                    soil_cur_2, temp_cur, humi_cur, int(evaluatePump(soil_cur_2))] + typ
             employee_writer.writerow(data)
 
 
@@ -455,7 +460,7 @@ def retrainModel():
         month = cur_day.month
         year = cur_day.year
         tdelta = cur_day - last_update
-        
+
         file_list = []
 
         for i in range(1):
@@ -468,12 +473,12 @@ def retrainModel():
 
             if os.path.exists(DIC_PATTH + '/AI/RetrainData/' + name):
                 file_list += [name]
-            
 
         if(tdelta.total_seconds() > 30*24*60*60):
             last_update = cur_day
 
-            retrain_model = model.loadModel(DIC_PATTH + '/AI/irrigationModel_v5.joblib')
+            retrain_model = model.loadModel(
+                DIC_PATTH + '/AI/irrigationModel_v5.joblib')
             # 3 last months
             flag = False
             for path in file_list:
@@ -484,6 +489,24 @@ def retrainModel():
 
             if flag and accurary > 0.85:
                 model.saveRetrainModel()
+
+
+def updateTaskList():
+    for task in taskList:
+        time = 0
+        repeat = task['selectedValue']
+
+        if repeat == 'EveryDay':
+            time = 1
+        elif repeat == 'EveryWeek':
+            time = 7
+
+        if time > 0 and task['pumped'] is True and checkEqualTime(cur_date, cur_hour, task['date'], task['hour']) is False:
+            task['pumped'] = False
+            # update date
+            date_object = datetime.datetime.strptime(task['date'], date_format)
+            new_date = date_object + datetime.timedelta(days=time)
+            task['date'] = new_date.strftime('%d-%m-%Y')
 
 
 while True:
@@ -504,6 +527,7 @@ while True:
     # global curTime
     curTime = time.time()
     retrainModel()
+    updateTaskList()
 
     # print('Current Time in While', )
 
@@ -521,7 +545,7 @@ while True:
 
     cur_date = current_time.strftime(date_format)
     cur_hour = current_time.strftime(hour_format)
-    
+
     # print(type(cur_date))
     # print(type(cur_hour))
     # print(type(task[1]['date']))
@@ -539,10 +563,10 @@ while True:
         # global ser
         if pumping:
             print('Turn on pump')
-            ser.write("A".encode()) #Turn on pump
+            ser.write("A".encode())  # Turn on pump
         else:
             print('Turn off pump')
-            ser.write("a".encode()) #Turn off pump
+            ser.write("a".encode())  # Turn off pump
         OldPumping = pumping
 
     # count +=1
