@@ -1,7 +1,7 @@
 const ValueManual = require("../models/manual");
 
 // Controller function for creating manual value
-const createValueManual = async (req, res) => {
+const createValueManual1 = async (req, res) => {
   try {
     const { waterAmount, selectedDate, selectedHour, selectedValue, email } =
       req.body;
@@ -9,6 +9,32 @@ const createValueManual = async (req, res) => {
     // Create a new instance of ValueManual model
     const valueManual = new ValueManual({
       waterAmount,
+      selectedDate,
+      selectedHour,
+      selectedValue,
+      email,
+    });
+
+    // Save the value manual to MongoDB
+    await valueManual.save();
+
+    res.json({ success: true, message: "Value manual created successfully" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to create value manual",
+      error: error.message,
+    });
+  }
+};
+
+const createValueManual2 = async (req, res) => {
+  try {
+    const { time, selectedDate, selectedHour, selectedValue, email } = req.body;
+
+    // Create a new instance of ValueManual model
+    const valueManual = new ValueManual({
+      time,
       selectedDate,
       selectedHour,
       selectedValue,
@@ -41,6 +67,7 @@ const getValueManualByEmail = async (req, res) => {
       return {
         id: valueManual.id,
         waterAmount: valueManual.waterAmount,
+        time: valueManual.time,
         selectedDate: valueManual.selectedDate,
         selectedHour: valueManual.selectedHour,
         selectedValue: valueManual.selectedValue,
@@ -74,4 +101,9 @@ const deleteTask = async (req, res) => {
   }
 };
 
-module.exports = { createValueManual, getValueManualByEmail, deleteTask };
+module.exports = {
+  createValueManual1,
+  createValueManual2,
+  getValueManualByEmail,
+  deleteTask,
+};

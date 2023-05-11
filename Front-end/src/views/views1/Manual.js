@@ -33,57 +33,113 @@ export default function WateringForm() {
   const navigation = useNavigation();
   const handleManualList = async () => {
     try {
-      const response = await client.post(
-        "/create-value-manual",
-        {
-          waterAmount,
-          selectedDate,
-          selectedHour,
-          selectedValue,
-          email,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+      if (waterAmount) {
+        const response = await client.post(
+          "/create-value-manual1",
+          {
+            waterAmount,
+            selectedDate,
+            selectedHour,
+            selectedValue,
+            email,
           },
-        }
-      );
-      if (response.status === 200) {
-        // Gửi dữ liệu thành công, chuyển sang trang "ManualList"
-        navigation.navigate("ManualList1");
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [
-              {
-                name: "HomeView1",
-              },
-              {
-                name: "ManualList1",
-                options: {
-                  title: "Manual List",
-                },
-              },
-            ],
-          })
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
+        if (response.status === 200) {
+          // Gửi dữ liệu thành công, chuyển sang trang "ManualList"
+          navigation.navigate("ManualList1");
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                {
+                  name: "HomeView1",
+                },
+                {
+                  name: "ManualList1",
+                  options: {
+                    title: "Manual List",
+                  },
+                },
+              ],
+            })
+          );
+        } else {
+          // Xử lý khi gửi dữ liệu không thành công
+          // Ví dụ: Hiển thị thông báo lỗi
+          Alert.alert("Lỗi", "Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+        }
       } else {
-        // Xử lý khi gửi dữ liệu không thành công
-        // Ví dụ: Hiển thị thông báo lỗi
-        Alert.alert("Lỗi", "Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+        const response = await client.post(
+          "/create-value-manual2",
+          {
+            time,
+            selectedDate,
+            selectedHour,
+            selectedValue,
+            email,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.status === 200) {
+          // Gửi dữ liệu thành công, chuyển sang trang "ManualList"
+          navigation.navigate("ManualList1");
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                {
+                  name: "HomeView1",
+                },
+                {
+                  name: "ManualList1",
+                  options: {
+                    title: "Manual List",
+                  },
+                },
+              ],
+            })
+          );
+        } else {
+          // Xử lý khi gửi dữ liệu không thành công
+          // Ví dụ: Hiển thị thông báo lỗi
+          Alert.alert("Lỗi", "Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+        }
       }
     } catch (error) {
       console.log(error);
     }
   };
   const [waterAmount, setWaterAmount] = useState("");
+  const [time, setTime] = useState("");
   const [email, setEmail] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [selectedHour, setSelectedHour] = useState(new Date());
   const [showTimePicker, setshowTimePicker] = useState(false);
   const [showList, setShowList] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("không lặp lại");
+  const [selectedValue, setSelectedValue] = useState("None");
+  const [isWaterAmountInputDisabled, setIsWaterAmountInputDisabled] =
+    useState(false);
+  const [isTimeInputDisabled, setIsTimeInputDisabled] = useState(false);
+
+  const handleWaterAmountChange = (text) => {
+    setWaterAmount(text);
+    setIsTimeInputDisabled(true);
+  };
+
+  const handleTimeChange2 = (text) => {
+    setTime(text);
+    setIsWaterAmountInputDisabled(true);
+  };
   const handleDateSelect = (event, date) => {
     if (date) {
       setSelectedDate(date);
@@ -120,11 +176,33 @@ export default function WateringForm() {
         <TextInput
           style={styles.input}
           value={waterAmount}
-          onChangeText={(text) => setWaterAmount(text)}
+          onChangeText={handleWaterAmountChange}
           keyboardType="numeric"
-          placeholder="Nhập lượng nước bạn mong muốn vào đây"
+          placeholder={
+            isWaterAmountInputDisabled
+              ? "Không thể nhập lượng nước"
+              : "Nhập lượng nước (đơn vị Lít)"
+          }
           placeholderTextColor="#999"
           fontSize={17}
+          editable={!isWaterAmountInputDisabled}
+        />
+      </View>
+      <View style={styles.waterAmount}>
+        <Text style={styles.question}>Nhập Thời gian cần tưới</Text>
+        <TextInput
+          style={styles.input}
+          value={time}
+          onChangeText={handleTimeChange2}
+          keyboardType="numeric"
+          placeholder={
+            isTimeInputDisabled
+              ? "Không thể nhập thời gian"
+              : "Nhập thời gian (đơn vị phút)"
+          }
+          placeholderTextColor="#999"
+          fontSize={17}
+          editable={!isTimeInputDisabled}
         />
       </View>
       <View style={styles.setDateANDsetTime}>
@@ -192,28 +270,14 @@ export default function WateringForm() {
       </View>
       {showList && (
         <View style={styles.list}>
-          <TouchableOpacity
-            onPress={() => handleListItemPress("Không lặp lại")}
-          >
-            <Text style={styles.listItem}>Không lặp lại</Text>
+          <TouchableOpacity onPress={() => handleListItemPress("None")}>
+            <Text style={styles.listItem}>Không Lặp Lại </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleListItemPress("Một lần một ngày")}
-          >
-            <Text style={styles.listItem}>Một lần một ngày</Text>
+          <TouchableOpacity onPress={() => handleListItemPress("EveryDay")}>
+            <Text style={styles.listItem}>Mỗi Ngày</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleListItemPress("Một lần 1 tuần")}
-          >
-            <Text style={styles.listItem}>Một lần 1 tuần</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleListItemPress("Một lần một tháng")}
-          >
-            <Text style={styles.listItem}>Một lần một tháng</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleListItemPress("Khác")}>
-            <Text style={styles.listItem}>Khác</Text>
+          <TouchableOpacity onPress={() => handleListItemPress("EveryWeek")}>
+            <Text style={styles.listItem}>Mỗi Tuần</Text>
           </TouchableOpacity>
         </View>
       )}
